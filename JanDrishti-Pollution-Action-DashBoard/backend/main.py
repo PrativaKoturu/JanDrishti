@@ -2062,11 +2062,16 @@ async def trigger_daily_calculation():
 # Health Check Endpoints
 @app.get("/")
 async def root():
-    return {"message": "JanDrishti API", "version": "1.0.0"}
+    return {"message": "JanDrishti API", "version": "1.0.0", "status": "online"}
 
 @app.get("/api/health")
 async def health_check():
     return {"status": "healthy", "timestamp": datetime.utcnow().isoformat()}
+
+# Test endpoint to verify Vercel routing
+@app.get("/test")
+async def test():
+    return {"message": "Test endpoint working", "handler": "active"}
 
 if __name__ == "__main__":
     import uvicorn
