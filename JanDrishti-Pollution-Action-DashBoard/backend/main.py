@@ -63,9 +63,7 @@ app = FastAPI(title="JanDrishti API", version="1.0.0", lifespan=lifespan)
 # CORS Configuration
 # Default origins: localhost for development and Vercel frontend for production
 default_origins = [
-    "http://localhost:3000",
-    "http://localhost:3001",
-    "https://jan-drishti.vercel.app",
+    "*"
 ]
 cors_origins_env = os.getenv("CORS_ORIGINS", "")
 if cors_origins_env:
