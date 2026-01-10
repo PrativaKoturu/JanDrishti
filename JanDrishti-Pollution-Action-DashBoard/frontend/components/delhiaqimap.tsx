@@ -111,7 +111,7 @@ const DelhiAQIMap: React.FC = () => {
       }
       setError(null);
       
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
+      const backendUrl = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL || 'https://jan-drishti-eil9-d02lupujf-prativakoturus-projects.vercel.app';
       console.log('📡 Fetching from:', `${backendUrl}/api/delhi-aqi`);
       
       const response = await fetch(`${backendUrl}/api/delhi-aqi`, {
@@ -254,7 +254,7 @@ const DelhiAQIMap: React.FC = () => {
   const triggerRecompute = useCallback(async () => {
     try {
       setRefreshing(true);
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
+      const backendUrl = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL || 'https://jan-drishti-eil9-d02lupujf-prativakoturus-projects.vercel.app';
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
       const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
       
@@ -427,7 +427,7 @@ const DelhiAQIMap: React.FC = () => {
   useEffect(() => {
     console.log('🗺️ DelhiAQIMap component mounted, fetching data...');
     console.log('Map container:', mapContainer.current);
-    console.log('Backend URL:', process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000');
+    console.log('Backend URL:', process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL || 'https://jan-drishti-eil9-d02lupujf-prativakoturus-projects.vercel.app');
     fetchData();
   }, [fetchData]);
 

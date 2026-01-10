@@ -135,7 +135,7 @@ export default function MainMetrics({ selectedWard }: MainMetricsProps) {
         } else if (err.response?.status === 500) {
           errorMessage = "Server error. Please check if the backend server is running."
         } else if (err.code === 'ECONNREFUSED' || err.message?.includes('Network Error')) {
-          errorMessage = "Cannot connect to the backend server. Please ensure the server is running on port 8000."
+          errorMessage = "Cannot connect to the backend server. Please check your network connection."
         }
         
         setError(errorMessage)

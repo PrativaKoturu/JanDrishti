@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 // API Configuration
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://jan-drishti-eil9-d02lupujf-prativakoturus-projects.vercel.app'
 
 // Create axios instance
 export const api = axios.create({
