@@ -1,0 +1,433 @@
+import axios from 'axios'
+
+// API Configuration
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+
+// Create axios instance
+export const api = axios.create({
+  baseURL: API_BASE_URL,
+  timeout: 30000, // 30 seconds timeout
+  headers: {
+    'Content-Type': 'application/json',
+  },
+})
+
+// Request interceptor to add auth token
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('access_token')
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
+    return config
+  },
+  (error) => {
+    return Promise.reject(error)
+  }
+)
+
+// Response interceptor to handle auth errors and retries
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config
+    
+    // Handle 401 - Unauthorized
+    if (error.response?.status === 401) {
+      // Clear token and redirect to login
+      localStorage.removeItem('access_token')
+      localStorage.removeItem('user')
+      // You can add redirect logic here
+      return Promise.reject(error)
+    }
+    
+    // Retry logic for network errors and 5xx errors
+    if (
+      (!error.response || error.response.status >= 500) &&
+      !originalRequest._retry &&
+      originalRequest._retryCount < 3
+    ) {
+      originalRequest._retry = true
+      originalRequest._retryCount = (originalRequest._retryCount || 0) + 1
+      
+      // Exponential backoff: 1s, 2s, 4s
+      const delay = Math.pow(2, originalRequest._retryCount - 1) * 1000
+      
+      await new Promise(resolve => setTimeout(resolve, delay))
+      
+      return api(originalRequest)
+    }
+    
+    return Promise.reject(error)
+  }
+)
+
+// Types
+export interface User {
+  id: string
+  email: string
+  full_name?: string
+  phone_number?: string
+}
+
+export interface LoginCredentials {
+  email: string
+  password: string
+}
+
+export interface SignupCredentials {
+  email: string
+  password: string
+  full_name?: string
+  phone_number?: string
+}
+
+export interface Report {
+  id: string
+  user_id: string
+  title: string
+  description: string
+  location: string
+  category: string
+  status: 'open' | 'in-progress' | 'resolved'
+  priority: 'low' | 'medium' | 'high' | 'urgent'
+  ward?: string
+  images: string[]
+  upvotes: number
+  created_at: string
+  updated_at: string
+}
+
+export interface CreateReportData {
+  title: string
+  description: string
+  location: string
+  category: string
+  priority?: string
+  ward?: string
+  images?: string[]
+}
+
+export interface ChatMessage {
+  id: string
+  user_id: string
+  message: string
+  response?: string
+  type: 'user' | 'bot'
+  created_at: string
+}
+
+export interface AQIData {
+  value: number
+  status: string
+  pm25: number
+  pm10: number
+  co?: number
+  so2?: number
+  no2?: number
+  temperature: number
+  humidity: number
+  windSpeed: number
+  uvIndex: number
+  location: string
+  timestamp: string
+}
+
+// API Services
+export const authService = {
+  async login(credentials: LoginCredentials) {
+    const response = await api.post('/api/auth/login', credentials)
+    return response.data
+  },
+
+  async signup(credentials: SignupCredentials) {
+    const response = await api.post('/api/auth/signup', credentials)
+    return response.data
+  },
+
+  async getCurrentUser() {
+    const response = await api.get('/api/auth/me')
+    return response.data
+  },
+
+  logout() {
+    localStorage.removeItem('access_token')
+    localStorage.removeItem('user')
+  }
+}
+
+export const reportsService = {
+  async getReports(params?: { category?: string; status?: string; limit?: number; offset?: number }) {
+    const response = await api.get('/api/reports', { params })
+    return response.data
+  },
+
+  async createReport(data: CreateReportData) {
+    const response = await api.post('/api/reports', data)
+    return response.data
+  },
+
+  async getReport(id: string) {
+    const response = await api.get(`/api/reports/${id}`)
+    return response.data
+  },
+
+  async updateReport(id: string, data: CreateReportData) {
+    const response = await api.put(`/api/reports/${id}`, data)
+    return response.data
+  },
+
+  async upvote(id: string) {
+    const response = await api.post(`/api/reports/${id}/upvote`)
+    return response.data
+  }
+}
+
+// Chat API - use this in your components
+export const chatAPI = {
+  async getMessages(params?: { limit?: number; offset?: number }) {
+    const response = await api.get('/api/chat/messages', { params })
+    return response.data
+  },
+
+  async sendMessage(message: string) {
+    const response = await api.post('/api/chat/messages', { message })
+    return response.data
+  }
+}
+
+// Alias for backward compatibility
+export const chatService = chatAPI
+
+// AQI Data Types
+export interface WardData {
+  ward_name: string
+  ward_no: string
+  quadrant: string
+  latitude: number
+  longitude: number
+  is_active?: boolean
+}
+
+export interface DailyAQIData {
+  id: string
+  ward_name: string
+  ward_no: string
+  quadrant: string
+  latitude: number
+  longitude: number
+  date: string
+  avg_aqi: number
+  avg_pm25: number | null
+  avg_pm10: number | null
+  avg_no2: number | null
+  avg_o3: number | null
+  min_aqi: number
+  max_aqi: number
+  hourly_readings_count: number
+  created_at: string
+  updated_at: string
+}
+
+// AQI Service
+export const aqiService = {
+  async getCurrentAQI(location: string = 'Central Delhi'): Promise<AQIData> {
+    // This would be replaced with real API calls
+    return {
+      value: 206,
+      status: 'Severe',
+      pm25: 130,
+      pm10: 180,
+      co: 2.5,
+      so2: 15,
+      no2: 45,
+      temperature: 13,
+      humidity: 77,
+      windSpeed: 7,
+      uvIndex: 0,
+      location,
+      timestamp: new Date().toISOString()
+    }
+  },
+
+  async getWards(): Promise<WardData[]> {
+    try {
+      const response = await api.get('/api/aqi/wards')
+      return response.data
+    } catch (error) {
+      console.error('Error fetching wards:', error)
+      throw error
+    }
+  },
+
+  async getDailyAQIData(params?: {
+    ward_no?: string
+    start_date?: string
+    end_date?: string
+    limit?: number
+  }): Promise<DailyAQIData[]> {
+    try {
+      const response = await api.get('/api/aqi/daily', { params })
+      return response.data
+    } catch (error) {
+      console.error('Error fetching daily AQI data:', error)
+      throw error
+    }
+  },
+
+  async getWardDailyData(ward_no: string, days: number = 30): Promise<DailyAQIData[]> {
+    try {
+      const response = await api.get(`/api/aqi/daily/${ward_no}`, {
+        params: { days }
+      })
+      return response.data
+    } catch (error) {
+      console.error('Error fetching ward daily data:', error)
+      throw error
+    }
+  },
+
+  async getWardHourlyData(ward_no: string, hours: number = 24): Promise<{
+    ward_no: string
+    readings: Array<{
+      time: string
+      hour: number
+      date: string
+      aqi: number | null
+      pm25: number | null
+      pm10: number | null
+      no2: number | null
+      o3: number | null
+      timestamp: string
+    }>
+    total_readings: number
+    hours_requested: number
+  }> {
+    try {
+      const response = await api.get(`/api/aqi/hourly/${ward_no}`, {
+        params: { hours }
+      })
+      return response.data
+    } catch (error) {
+      console.error('Error fetching ward hourly data:', error)
+      throw error
+    }
+  },
+
+  async getCurrentAQIForWard(ward_no: string): Promise<{
+    aqi: number
+    pm25: number | null
+    pm10: number | null
+    no2: number | null
+    o3: number | null
+    timestamp: string
+  }> {
+    // Get ward coordinates first
+    let ward: WardData | undefined
+    try {
+      const wards = await aqiService.getWards()
+      ward = wards.find(w => w.ward_no === ward_no)
+    } catch (error) {
+      console.error('Error fetching wards:', error)
+      throw new Error('Failed to load ward information. Please refresh the page.')
+    }
+
+    if (!ward) {
+      throw new Error(`Ward ${ward_no} not found in the system`)
+    }
+
+    // Try hourly data from Redis first (fastest if available)
+    let hourlyDataAvailable = false
+    try {
+      const hourlyResponse = await api.get(`/api/aqi/hourly/${ward_no}`, {
+        params: { hours: 1 }
+      })
+      
+      if (hourlyResponse.data?.readings && hourlyResponse.data.readings.length > 0) {
+        const latest = hourlyResponse.data.readings[hourlyResponse.data.readings.length - 1]
+        if (latest.aqi && latest.aqi > 0) {
+          hourlyDataAvailable = true
+          return {
+            aqi: latest.aqi,
+            pm25: latest.pm25 ?? null,
+            pm10: latest.pm10 ?? null,
+            no2: latest.no2 ?? null,
+            o3: latest.o3 ?? null,
+            timestamp: latest.timestamp
+          }
+        }
+      }
+    } catch (error: any) {
+      // Log but don't throw - we'll try feed endpoint
+      console.log('Hourly data not available in Redis:', error.response?.data?.detail || error.message)
+    }
+    
+    // Fallback to feed endpoint (always works if WAQI API is available)
+    // This is the primary source for real-time data
+    try {
+      const feedResponse = await api.get(`/api/aqi/feed/${ward.latitude}/${ward.longitude}`)
+      
+      if (feedResponse.data && feedResponse.data.aqi !== undefined && feedResponse.data.aqi !== null) {
+        return {
+          aqi: feedResponse.data.aqi,
+          pm25: feedResponse.data.pm25 ?? null,
+          pm10: feedResponse.data.pm10 ?? null,
+          no2: feedResponse.data.no2 ?? null,
+          o3: feedResponse.data.o3 ?? null,
+          timestamp: feedResponse.data.updated || new Date().toISOString()
+        }
+      } else {
+        throw new Error('AQI data not available for this location')
+      }
+    } catch (error: any) {
+      console.error('Error fetching from feed endpoint:', error)
+      const errorMessage = error.response?.data?.detail || error.message || 'Unknown error'
+      throw new Error(`Unable to fetch AQI data: ${errorMessage}. Please ensure the backend server is running and the WAQI API is accessible.`)
+    }
+  },
+
+  async getHistoricalData(location: string, days: number = 7) {
+    // Mock historical data - replace with real API
+    const data = []
+    for (let i = days; i >= 0; i--) {
+      const date = new Date()
+      date.setDate(date.getDate() - i)
+      data.push({
+        date: date.toISOString().split('T')[0],
+        aqi: Math.floor(Math.random() * 100) + 150,
+        pm25: Math.floor(Math.random() * 50) + 80,
+        pm10: Math.floor(Math.random() * 80) + 120
+      })
+    }
+    return data
+  },
+
+  async getForecast(ward_no: string, period: '24h' | '7d' | '30d' = '7d', metric: 'aqi' | 'pm25' | 'pm10' | 'no2' | 'o3' = 'aqi'): Promise<{
+    ward_no: string
+    ward_name: string
+    period: string
+    metric: string
+    forecast: Array<{
+      time: string
+      day: string
+      [key: string]: number | string
+    }>
+    confidence: number
+    historical_data_points: number
+    trend: string
+    generated_at: string
+    note?: string
+  }> {
+    try {
+      const response = await api.get(`/api/aqi/forecast/${ward_no}`, {
+        params: { period, metric }
+      })
+      return response.data
+    } catch (error) {
+      console.error('Error fetching AI forecast:', error)
+      throw error
+    }
+  }
+}
+
+export default api
