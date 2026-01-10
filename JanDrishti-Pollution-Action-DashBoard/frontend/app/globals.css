@@ -1,0 +1,201 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --background: #ffffff;
+  --foreground: #020617;
+  --card: #ffffff;
+  --card-foreground: #020617;
+  --popover: #ffffff;
+  --popover-foreground: #020617;
+  --primary: #0ea5e9;
+  --primary-foreground: #ffffff;
+  --secondary: #f1f5f9;
+  --secondary-foreground: #0f172a;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --accent: #f1f5f9;
+  --accent-foreground: #0f172a;
+  --destructive: #ef4444;
+  --destructive-foreground: #f8fafc;
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --ring: #0ea5e9;
+  --chart-1: #0ea5e9;
+  --chart-2: #6366f1;
+  --chart-3: #10b981;
+  --chart-4: #f59e0b;
+  --chart-5: #ef4444;
+  --radius: 1.25rem;
+}
+
+.dark {
+  --background: #020617;
+  --foreground: #f8fafc;
+  --card: rgba(15, 23, 42, 0.6);
+  --card-foreground: #f8fafc;
+  --popover: #0f172a;
+  --popover-foreground: #f8fafc;
+  --primary: #38bdf8;
+  --primary-foreground: #020617;
+  --secondary: #1e293b;
+  --secondary-foreground: #f8fafc;
+  --muted: #334155;
+  --muted-foreground: #94a3b8;
+  --accent: #818cf8;
+  --accent-foreground: #ffffff;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: rgba(255, 255, 255, 0.08);
+  --input: #0f172a;
+  --ring: #38bdf8;
+}
+
+@theme inline {
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-display: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "Geist Mono", "Geist Mono Fallback", monospace;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  @keyframes shimmer {
+    from { background-position: 0% 50%; }
+    to { background-position: 200% 50%; }
+  }
+
+  --animate-shimmer: shimmer 3s linear infinite;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display font-semibold tracking-tight;
+  }
+  h1 {
+    @apply text-3xl md:text-4xl;
+  }
+  h2 {
+    @apply text-2xl md:text-3xl;
+  }
+  h3 {
+    @apply text-xl md:text-2xl;
+  }
+}
+
+/* Advanced animations */
+@keyframes mesh-float {
+  0% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(10%, 15%) scale(1.1); }
+  66% { transform: translate(-15%, 5%) scale(0.9); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
+@keyframes text-reveal {
+  from { clip-path: inset(0 100% 0 0); }
+  to { clip-path: inset(0 0 0 0); }
+}
+
+@keyframes grid-fade {
+  from { opacity: 0; }
+  to { opacity: 0.05; }
+}
+
+.animate-mesh {
+  animation: mesh-float 20s ease-in-out infinite;
+}
+
+.animate-text-reveal {
+  animation: text-reveal 1.5s cubic-bezier(0.77, 0, 0.175, 1) forwards;
+}
+
+/* Custom Glassmorphism */
+.glass {
+  @apply bg-card/60 backdrop-blur-xl border border-border;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+}
+
+.dark .glass {
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+.glass-morphism {
+  @apply bg-background/40 backdrop-blur-md border border-border/50;
+}
+
+.glass-morphism-strong {
+  @apply bg-background/80 backdrop-blur-xl border border-border;
+}
+
+/* Premium Gradients */
+.grad-primary {
+  background: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%);
+}
+
+.grad-text {
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_auto] animate-shimmer;
+}
+
+/* Layout Utilities */
+.container-px {
+  @apply px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto;
+}
+
+/* Hover Effects */
+.hover-card {
+  @apply transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:shadow-primary/10 hover:border-primary/30;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: #020617;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #1e293b;
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
