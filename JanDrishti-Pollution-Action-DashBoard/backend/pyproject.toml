@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "jandrishti-backend"
+version = "1.0.0"
+description = "JanDrishti Pollution Action Dashboard Backend API"
+requires-python = ">=3.9"
+dependencies = [
+    "fastapi>=0.104.0",
+    "uvicorn[standard]>=0.24.0",
+    "python-dotenv>=1.0.0",
+    "supabase>=2.0.0",
+    "python-jose[cryptography]>=3.3.0",
+    "groq>=0.4.0",
+    "redis>=5.0.0",
+    "requests>=2.31.0",
+    "geopandas>=0.14.0",
+    "pandas>=2.1.0",
+    "shapely>=2.0.0",
+    "apscheduler>=3.10.0"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.21.0",
+    "black>=23.0.0",
+    "flake8>=6.0.0"
+]
+
+[tool.setuptools]
+packages = ["."]
+
+[tool.black]
+line-length = 100
+target-version = ['py39']
