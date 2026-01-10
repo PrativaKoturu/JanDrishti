@@ -62,92 +62,58 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="JanDrishti API", version="1.0.0", lifespan=lifespan)
 
-# CORS Configuration
-# Default origins: localhost for development and Vercel frontend for production
-default_origins = [
-    "http://localhost:3000",
-    "http://localhost:3001",
-    "https://jan-drishti.vercel.app",
-]
-cors_origins_env = os.getenv("CORS_ORIGINS", "")
-if cors_origins_env:
-    # If CORS_ORIGINS is set, use it (comma-separated list)
-    origins = [origin.strip() for origin in cors_origins_env.split(",")]
-    # Add default origins if not already present
-    for default_origin in default_origins:
-        if default_origin not in origins:
-            origins.append(default_origin)
-else:
-    # Otherwise use defaults
-    origins = default_origins
-
-# Allow all Vercel preview deployments using regex
-vercel_regex = r"https://.*\.vercel\.app"
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_origin_regex=vercel_regex,  # Allow all Vercel preview deployments
-    allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
-    allow_headers=["*"],
-    expose_headers=["*"],
-    max_age=3600,  # Cache preflight requests for 1 hour
-)
-
-# Additional CORS middleware to ensure headers are always set (for Vercel serverless)
+# CORS Configuration - Allow all origins
+# Using a custom middleware to allow any origin while maintaining credentials support
 class CORSHeaderMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
-        # Get origin from request
+        # Get origin from request - allow any origin
         origin = request.headers.get("origin")
-        
-        # Check if origin should be allowed
-        allowed = False
-        if origin:
-            # Check against explicit origins
-            if origin in origins:
-                allowed = True
-            # Check against regex pattern
-            elif re.match(vercel_regex, origin):
-                allowed = True
         
         response = await call_next(request)
         
-        # Add CORS headers if origin is allowed
-        if allowed and origin:
+        # Add CORS headers for any origin
+        if origin:
             response.headers["Access-Control-Allow-Origin"] = origin
             response.headers["Access-Control-Allow-Credentials"] = "true"
-            response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH"
+            response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD"
             response.headers["Access-Control-Allow-Headers"] = "*"
             response.headers["Access-Control-Expose-Headers"] = "*"
             response.headers["Access-Control-Max-Age"] = "3600"
+        else:
+            # If no origin header (e.g., same-origin request), still set headers
+            response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD"
+            response.headers["Access-Control-Allow-Headers"] = "*"
         
         return response
 
+# Add CORS middleware first (will be overridden by our custom middleware, but provides fallback)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # This won't work with credentials, but our custom middleware handles it
+    allow_credentials=False,  # Set to False here since we handle it in custom middleware
+    allow_methods=["*"],
+    allow_headers=["*"],
+    expose_headers=["*"],
+)
+
+# Add our custom CORS middleware that allows all origins with credentials
 app.add_middleware(CORSHeaderMiddleware)
 
-# Explicit OPTIONS handler for all routes (fallback for serverless)
+# Explicit OPTIONS handler for all routes (handles preflight requests)
 @app.options("/{full_path:path}")
 async def options_handler(full_path: str, request: Request):
-    origin = request.headers.get("origin")
-    allowed = False
+    origin = request.headers.get("origin", "*")
     
-    if origin:
-        if origin in origins or re.match(vercel_regex, origin):
-            allowed = True
-    
-    if allowed and origin:
-        return Response(
-            status_code=200,
-            headers={
-                "Access-Control-Allow-Origin": origin,
-                "Access-Control-Allow-Credentials": "true",
-                "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS, PATCH",
-                "Access-Control-Allow-Headers": "*",
-                "Access-Control-Max-Age": "3600",
-            }
-        )
-    return Response(status_code=200)
+    return Response(
+        status_code=200,
+        headers={
+            "Access-Control-Allow-Origin": origin if origin else "*",
+            "Access-Control-Allow-Credentials": "true",
+            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD",
+            "Access-Control-Allow-Headers": "*",
+            "Access-Control-Max-Age": "3600",
+        }
+    )
 
 # Supabase Client
 supabase_url = os.getenv("SUPABASE_URL")
