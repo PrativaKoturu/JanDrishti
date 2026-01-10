@@ -153,7 +153,8 @@ export default function AuthDialog({ open, onOpenChange, mode: initialMode = "lo
                   placeholder="+91 9876543210"
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value)}
-                  pattern="[+]?[0-9\s\-()]+"
+                  pattern="[+]?[0-9\s()-]+"
+                  title="Phone number can contain digits, spaces, parentheses, hyphens, and an optional + prefix"
                 />
                 <p className="text-xs text-muted-foreground">
                   We'll send WhatsApp updates about air quality alerts
