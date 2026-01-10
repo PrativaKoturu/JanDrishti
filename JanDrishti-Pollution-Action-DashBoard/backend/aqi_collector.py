@@ -299,20 +299,46 @@ class AQICollector:
                                 socket_keepalive=True,
                                 socket_keepalive_options={}
                             )
+                            # Test connection
+                            self.redis_client.ping()
                         else:
-                            self.redis_client = redis.Redis(
-                                host=REDIS_HOST,
-                                port=REDIS_PORT,
-                                db=REDIS_DB,
-                                username=REDIS_USERNAME if REDIS_PASSWORD else None,
-                                password=REDIS_PASSWORD,
-                                decode_responses=True,
-                                ssl=REDIS_SSL,
-                                ssl_cert_reqs=None if REDIS_SSL else False,
-                                socket_connect_timeout=10,
-                                socket_keepalive=True,
-                                socket_keepalive_options={}
-                            )
+                            # Try with SSL first if enabled
+                            try:
+                                self.redis_client = redis.Redis(
+                                    host=REDIS_HOST,
+                                    port=REDIS_PORT,
+                                    db=REDIS_DB,
+                                    username=REDIS_USERNAME if REDIS_PASSWORD else None,
+                                    password=REDIS_PASSWORD,
+                                    decode_responses=True,
+                                    ssl=REDIS_SSL,
+                                    ssl_cert_reqs=None if REDIS_SSL else False,
+                                    socket_connect_timeout=10,
+                                    socket_keepalive=True,
+                                    socket_keepalive_options={}
+                                )
+                                # Test connection
+                                self.redis_client.ping()
+                            except (redis.ConnectionError, redis.TimeoutError) as ssl_error:
+                                if REDIS_SSL and ("SSL" in str(ssl_error) or "wrong version" in str(ssl_error).lower()):
+                                    # SSL failed, try without SSL (some Redis Cloud ports don't use SSL)
+                                    logger.warning(f"⚠️  SSL connection failed, trying without SSL...")
+                                    self.redis_client = redis.Redis(
+                                        host=REDIS_HOST,
+                                        port=REDIS_PORT,
+                                        db=REDIS_DB,
+                                        username=REDIS_USERNAME if REDIS_PASSWORD else None,
+                                        password=REDIS_PASSWORD,
+                                        decode_responses=True,
+                                        ssl=False,
+                                        socket_connect_timeout=10,
+                                        socket_keepalive=True,
+                                        socket_keepalive_options={}
+                                    )
+                                    # Test connection
+                                    self.redis_client.ping()
+                                else:
+                                    raise
                     except Exception as reconnect_error:
                         logger.error(f"Failed to reconnect to Redis: {reconnect_error}")
                         if attempt == max_retries - 1:
