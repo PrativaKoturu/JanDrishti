@@ -1,5 +1,4 @@
 from fastapi import FastAPI, HTTPException, Depends, status, Query, Request
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.responses import Response
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -62,58 +61,45 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="JanDrishti API", version="1.0.0", lifespan=lifespan)
 
-# CORS Configuration - Allow all origins
-# Using a custom middleware to allow any origin while maintaining credentials support
+# CORS Configuration - Simplified and reliable
+# Handle CORS with a simple middleware that works on Vercel
 class CORSHeaderMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
-        # Get origin from request - allow any origin
+        # Get origin from request
         origin = request.headers.get("origin")
         
+        # Handle preflight OPTIONS requests
+        if request.method == "OPTIONS":
+            return Response(
+                status_code=200,
+                headers={
+                    "Access-Control-Allow-Origin": origin if origin else "*",
+                    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD",
+                    "Access-Control-Allow-Headers": "*",
+                    "Access-Control-Allow-Credentials": "true" if origin else "false",
+                    "Access-Control-Max-Age": "3600",
+                }
+            )
+        
+        # Process the request
         response = await call_next(request)
         
-        # Add CORS headers for any origin
+        # Add CORS headers to the response
         if origin:
             response.headers["Access-Control-Allow-Origin"] = origin
             response.headers["Access-Control-Allow-Credentials"] = "true"
-            response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD"
-            response.headers["Access-Control-Allow-Headers"] = "*"
-            response.headers["Access-Control-Expose-Headers"] = "*"
-            response.headers["Access-Control-Max-Age"] = "3600"
         else:
-            # If no origin header (e.g., same-origin request), still set headers
-            response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD"
-            response.headers["Access-Control-Allow-Headers"] = "*"
+            # Allow all origins if no origin header (but can't use credentials)
+            response.headers["Access-Control-Allow-Origin"] = "*"
+        
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD"
+        response.headers["Access-Control-Allow-Headers"] = "*"
+        response.headers["Access-Control-Expose-Headers"] = "*"
         
         return response
 
-# Add CORS middleware first (will be overridden by our custom middleware, but provides fallback)
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # This won't work with credentials, but our custom middleware handles it
-    allow_credentials=False,  # Set to False here since we handle it in custom middleware
-    allow_methods=["*"],
-    allow_headers=["*"],
-    expose_headers=["*"],
-)
-
-# Add our custom CORS middleware that allows all origins with credentials
+# Add CORS middleware - must be first
 app.add_middleware(CORSHeaderMiddleware)
-
-# Explicit OPTIONS handler for all routes (handles preflight requests)
-@app.options("/{full_path:path}")
-async def options_handler(full_path: str, request: Request):
-    origin = request.headers.get("origin", "*")
-    
-    return Response(
-        status_code=200,
-        headers={
-            "Access-Control-Allow-Origin": origin if origin else "*",
-            "Access-Control-Allow-Credentials": "true",
-            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD",
-            "Access-Control-Allow-Headers": "*",
-            "Access-Control-Max-Age": "3600",
-        }
-    )
 
 # Supabase Client
 supabase_url = os.getenv("SUPABASE_URL")
