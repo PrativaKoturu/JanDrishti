@@ -61,13 +61,35 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="JanDrishti API", version="1.0.0", lifespan=lifespan)
 
 # CORS Configuration
-origins = os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
+# Default origins: localhost for development and Vercel frontend for production
+default_origins = [
+    "http://localhost:3000",
+    "http://localhost:3001",
+    "https://jan-drishti.vercel.app",
+]
+cors_origins_env = os.getenv("CORS_ORIGINS", "")
+if cors_origins_env:
+    # If CORS_ORIGINS is set, use it (comma-separated list)
+    origins = [origin.strip() for origin in cors_origins_env.split(",")]
+    # Add default origins if not already present
+    for default_origin in default_origins:
+        if default_origin not in origins:
+            origins.append(default_origin)
+else:
+    # Otherwise use defaults
+    origins = default_origins
+
+# Allow all Vercel preview deployments using regex
+vercel_regex = r"https://.*\.vercel\.app"
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
+    allow_origin_regex=vercel_regex,  # Allow all Vercel preview deployments
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 # Supabase Client
