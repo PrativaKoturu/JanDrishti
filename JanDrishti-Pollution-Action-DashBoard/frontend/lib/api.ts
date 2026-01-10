@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 // API Configuration
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://jan-drishti-eil9.vercel.app'
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://jandrishti.onrender.com'
 
 // Create axios instance
 export const api = axios.create({
