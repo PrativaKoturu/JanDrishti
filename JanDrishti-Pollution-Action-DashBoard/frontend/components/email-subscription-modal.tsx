@@ -56,12 +56,16 @@ export default function EmailSubscriptionModal({
 
     setLoading(true)
     try {
+      console.log("Attempting email subscription...", { email, wardNo, frequency })
+      
       const response = await emailService.subscribe({
         email: email || undefined,
         ward_no: wardNo || undefined,
         subscription_type: "aqi_updates",
         frequency: frequency
       })
+
+      console.log("Email subscription response:", response)
 
       toast.success("✅ Subscribed successfully!", {
         description: "You'll receive AQI updates and precautions via email"
@@ -70,8 +74,24 @@ export default function EmailSubscriptionModal({
       onClose()
     } catch (error: any) {
       console.error("Email subscription error:", error)
+      console.error("Error details:", {
+        status: error?.response?.status,
+        data: error?.response?.data,
+        message: error?.message,
+        code: error?.code
+      })
       
       let errorMessage = "Failed to subscribe. Please try again."
+      
+      // Check if it's actually a success (status 200-299) but being caught as error
+      if (error?.response?.status >= 200 && error?.response?.status < 300) {
+        console.log("Success response caught as error - treating as success")
+        toast.success("✅ Subscribed successfully!", {
+          description: "You'll receive AQI updates and precautions via email"
+        })
+        onClose()
+        return
+      }
       
       if (error?.response?.status === 503) {
         errorMessage = "Email service is not configured yet. Please contact administrator."
