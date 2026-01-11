@@ -41,12 +41,16 @@ export default function EmailSubscriptionModal({
     e.preventDefault()
     
     if (!user) {
-      toast.error("Please login to subscribe")
+      toast.error("Please login to subscribe", {
+        description: "You need to be logged in to subscribe to email notifications"
+      })
       return
     }
 
     if (!email) {
-      toast.error("Please enter your email address")
+      toast.error("Email address required", {
+        description: "Please enter your email address"
+      })
       return
     }
 
@@ -59,15 +63,29 @@ export default function EmailSubscriptionModal({
         frequency: frequency
       })
 
-      toast.success("Subscribed successfully!", {
+      toast.success("✅ Subscribed successfully!", {
         description: "You'll receive AQI updates and precautions via email"
       })
       
       onClose()
     } catch (error: any) {
-      const errorMessage = error?.response?.data?.detail || "Failed to subscribe. Please try again."
-      toast.error("Subscription failed", {
-        description: errorMessage
+      console.error("Email subscription error:", error)
+      
+      let errorMessage = "Failed to subscribe. Please try again."
+      
+      if (error?.response?.status === 503) {
+        errorMessage = "Email service is not configured yet. Please contact administrator."
+      } else if (error?.response?.status === 401) {
+        errorMessage = "Authentication required. Please login again."
+      } else if (error?.response?.data?.detail) {
+        errorMessage = error.response.data.detail
+      } else if (error?.message) {
+        errorMessage = error.message
+      }
+      
+      toast.error("❌ Subscription failed", {
+        description: errorMessage,
+        duration: 5000
       })
     } finally {
       setLoading(false)

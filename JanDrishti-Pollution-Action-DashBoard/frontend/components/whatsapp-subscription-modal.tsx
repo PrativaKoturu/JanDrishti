@@ -75,34 +75,63 @@ export default function WhatsAppSubscriptionModal({
     e.preventDefault()
     
     if (!user) {
-      toast.error("Please login to subscribe")
+      toast.error("Please login to subscribe", {
+        description: "You need to be logged in to subscribe to WhatsApp notifications"
+      })
       return
     }
 
     if (!phoneNumber) {
-      toast.error("Please enter your phone number")
+      toast.error("Phone number required", {
+        description: "Please enter your phone number with country code (e.g., +919876543210)"
+      })
+      return
+    }
+
+    // Validate phone number format
+    if (!phoneNumber.startsWith('+')) {
+      toast.error("Invalid phone number", {
+        description: "Phone number must include country code (e.g., +919876543210)"
+      })
       return
     }
 
     setLoading(true)
     try {
       const response = await whatsappService.subscribe({
-        phone_number: phoneNumber || undefined, // Will use profile phone if empty
+        phone_number: phoneNumber,
         ward_no: wardNo || undefined,
         subscription_type: "aqi_updates",
         frequency: frequency
       })
 
-      toast.success("Subscribed successfully!", {
-        description: "If you're not in the sandbox, check your email for join instructions"
+      toast.success("✅ Subscribed successfully!", {
+        description: "You'll receive AQI updates via WhatsApp. If you're not in the sandbox, check for join instructions.",
+        duration: 6000
       })
       
       await checkSubscriptionStatus()
       onClose()
     } catch (error: any) {
-      const errorMessage = error?.response?.data?.detail || "Failed to subscribe. Please try again."
-      toast.error("Subscription failed", {
-        description: errorMessage
+      console.error("WhatsApp subscription error:", error)
+      
+      let errorMessage = "Failed to subscribe. Please try again."
+      
+      if (error?.response?.status === 503) {
+        errorMessage = "WhatsApp service is not configured yet. Please contact administrator or try email notifications."
+      } else if (error?.response?.status === 401) {
+        errorMessage = "Authentication required. Please login again."
+      } else if (error?.response?.status === 400) {
+        errorMessage = error?.response?.data?.detail || "Invalid phone number or data. Please check and try again."
+      } else if (error?.response?.data?.detail) {
+        errorMessage = error.response.data.detail
+      } else if (error?.message) {
+        errorMessage = error.message
+      }
+      
+      toast.error("❌ Subscription failed", {
+        description: errorMessage,
+        duration: 6000
       })
     } finally {
       setLoading(false)
@@ -118,14 +147,25 @@ export default function WhatsAppSubscriptionModal({
     setLoading(true)
     try {
       await whatsappService.unsubscribe(activeSub.id)
-      toast.success("Unsubscribed successfully")
+      toast.success("✅ Unsubscribed successfully", {
+        description: "You will no longer receive WhatsApp notifications"
+      })
       setSubscriptionStatus(null)
       setPhoneNumber("")
       setWardNo("")
       setFrequency("daily")
     } catch (error: any) {
-      const errorMessage = error?.response?.data?.detail || "Failed to unsubscribe. Please try again."
-      toast.error("Unsubscribe failed", {
+      console.error("Unsubscribe error:", error)
+      
+      let errorMessage = "Failed to unsubscribe. Please try again."
+      
+      if (error?.response?.status === 404) {
+        errorMessage = "Subscription not found. It may have already been removed."
+      } else if (error?.response?.data?.detail) {
+        errorMessage = error.response.data.detail
+      }
+      
+      toast.error("❌ Unsubscribe failed", {
         description: errorMessage
       })
     } finally {
@@ -287,6 +327,9 @@ export default function WhatsAppSubscriptionModal({
                 className="w-full px-4 py-3 rounded-xl glass-effect border border-border/40 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
                 required={!userPhone}
               />
+              <p className="text-xs text-muted-foreground mt-1.5">
+                Include country code (e.g., +91 for India)
+              </p>
               {userPhone ? (
                 <p className="text-xs text-green-400 mt-1">
                   ✓ Using phone number from your profile
