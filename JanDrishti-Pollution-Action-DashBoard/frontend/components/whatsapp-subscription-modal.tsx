@@ -58,8 +58,14 @@ export default function WhatsAppSubscriptionModal({
           setFrequency(activeSub.frequency || "daily")
         }
       }
-    } catch (error) {
-      console.error("Error checking subscription:", error)
+    } catch (error: any) {
+      // Silently handle 404 - subscription endpoint may not be available yet
+      if (error?.response?.status === 404) {
+        console.log("WhatsApp subscription service not available")
+        setSubscriptionStatus(null)
+      } else {
+        console.error("Error checking subscription:", error)
+      }
     } finally {
       setCheckingStatus(false)
     }
