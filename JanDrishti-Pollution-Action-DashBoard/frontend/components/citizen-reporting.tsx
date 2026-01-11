@@ -1,10 +1,10 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { FileText, Wind, Building2, Car, Factory, Flame, ClipboardList, Plus, BarChart3, MapPin, ThumbsUp, Camera, Clock, CheckCircle2 } from "lucide-react"
 import { useAuth } from "@/context/auth-context"
 import { reportsService, CreateReportData } from "@/lib/api"
-import AuthDialog from "@/components/auth-dialog"
 import { toast } from "sonner"
 
 interface CitizenReportingProps {
@@ -28,10 +28,10 @@ interface Report {
 }
 
 export default function CitizenReporting({ selectedWard }: CitizenReportingProps) {
+  const router = useRouter()
   const [activeReportTab, setActiveReportTab] = useState<string>("reports")
   const [selectedCategory, setSelectedCategory] = useState<string>("all")
   const [showReportForm, setShowReportForm] = useState(false)
-  const [showAuthDialog, setShowAuthDialog] = useState(false)
   const [reports, setReports] = useState<Report[]>([])
   const [loading, setLoading] = useState(false)
   const [submitting, setSubmitting] = useState(false)
@@ -70,7 +70,7 @@ export default function CitizenReporting({ selectedWard }: CitizenReportingProps
     e.preventDefault()
     
     if (!isAuthenticated) {
-      setShowAuthDialog(true)
+      router.push('/login')
       return
     }
 
@@ -139,7 +139,7 @@ export default function CitizenReporting({ selectedWard }: CitizenReportingProps
       toast.info(`Please login to ${action}`, {
         action: {
           label: "Login",
-          onClick: () => setShowAuthDialog(true)
+          onClick: () => router.push('/login')
         }
       })
       return false
@@ -356,7 +356,7 @@ export default function CitizenReporting({ selectedWard }: CitizenReportingProps
                 <h3 className="text-2xl font-bold text-foreground mb-2">Login Required</h3>
                 <p className="text-muted-foreground mb-6">Please login to submit pollution reports and help your community</p>
                 <button
-                  onClick={() => setShowAuthDialog(true)}
+                  onClick={() => router.push('/login')}
                   className="px-6 py-3 rounded-xl bg-gradient-to-r from-primary to-accent text-white font-bold hover:shadow-lg hover-glow transition-all duration-300 hover:scale-105"
                 >
                   Login to Submit Report
@@ -513,7 +513,6 @@ export default function CitizenReporting({ selectedWard }: CitizenReportingProps
     </div>
 
     {/* Auth Dialog */}
-    <AuthDialog open={showAuthDialog} onOpenChange={setShowAuthDialog} />
   </>
   )
 }
