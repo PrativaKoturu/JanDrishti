@@ -35,15 +35,15 @@ export default function SignupModal({ onLoginClick, onClose }: SignupModalProps)
     setLoading(true)
 
     // Client-side validation
-    if (!fullname || !email || !password || !confirmPassword) {
+    if (!fullname || !email || !password || !confirmPassword || !phone) {
       setError('Please fill in all required fields')
       toast.error('Please fill in all required fields')
       setLoading(false)
       return
     }
 
-    // Phone number validation (optional but if provided, must be valid)
-    if (phone && !validatePhoneNumber(phone)) {
+    // Phone number validation (required, must be valid)
+    if (!validatePhoneNumber(phone)) {
       setError('Phone number must be exactly 10 digits')
       toast.error('Phone number must be exactly 10 digits')
       setLoading(false)
@@ -187,11 +187,16 @@ export default function SignupModal({ onLoginClick, onClose }: SignupModalProps)
         </div>
 
         <div className="form-group">
-          <label htmlFor="phone">Phone Number (Optional)</label>
+          <label htmlFor="phone">
+            Phone Number <span style={{ color: '#ef4444' }}>*</span>
+            <span style={{ fontSize: '12px', color: '#6b7280', fontWeight: 'normal', marginLeft: '8px' }}>
+              (Required for WhatsApp notifications)
+            </span>
+          </label>
           <input
             type="tel"
             id="phone"
-            placeholder="Enter your 10-digit phone number"
+            placeholder="Enter your 10-digit phone number (e.g., 9876543210)"
             value={phone}
             onChange={(e) => {
               const value = e.target.value.replace(/\D/g, '')
@@ -199,8 +204,12 @@ export default function SignupModal({ onLoginClick, onClose }: SignupModalProps)
               setError('')
             }}
             maxLength={10}
+            required
             disabled={loading || !!success}
           />
+          <small style={{ display: 'block', marginTop: '4px', color: '#6b7280', fontSize: '12px' }}>
+            We'll use this number to send you AQI updates and safety alerts on WhatsApp
+          </small>
         </div>
 
         <div className="form-group">

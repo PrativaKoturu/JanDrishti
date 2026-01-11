@@ -408,34 +408,54 @@ export default function AIForecast({ selectedWard }: AIForecastProps) {
               <AreaChart data={forecastData}>
                 <defs>
                   <linearGradient id="colorForecast" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={metrics.find(m => m.id === selectedMetric)?.color} stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor={metrics.find(m => m.id === selectedMetric)?.color} stopOpacity={0}/>
+                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.5}/>
+                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.2)" strokeWidth={1} />
                 <XAxis 
                   dataKey="time" 
-                  stroke="rgba(255,255,255,0.6)" 
-                  style={{ fontSize: "12px", fontWeight: "500" }}
+                  stroke="rgba(255,255,255,0.9)" 
+                  strokeWidth={1.5}
+                  style={{ fontSize: "12px", fontWeight: "600" }}
+                  tick={{ fill: "rgba(255,255,255,0.9)", fontWeight: "600" }}
                 />
-                <YAxis stroke="rgba(255,255,255,0.6)" style={{ fontSize: "12px", fontWeight: "500" }} />
+                <YAxis 
+                  stroke="rgba(255,255,255,0.9)" 
+                  strokeWidth={1.5}
+                  style={{ fontSize: "12px", fontWeight: "600" }}
+                  tick={{ fill: "rgba(255,255,255,0.9)", fontWeight: "600" }}
+                />
                 <Tooltip
                   contentStyle={{
                     backgroundColor: "rgba(15, 20, 25, 0.95)",
-                    border: "1px solid rgba(59, 130, 246, 0.3)",
+                    border: "1px solid rgba(59, 130, 246, 0.5)",
                     borderRadius: "12px",
                     boxShadow: "0 8px 32px rgba(0, 0, 0, 0.4)",
                     backdropFilter: "blur(20px)",
                   }}
                   labelStyle={{ color: "#f1f5f9", fontWeight: "600" }}
+                  cursor={{ stroke: "rgba(59, 130, 246, 0.5)", strokeWidth: 2 }}
                 />
                 <Area
                   type="monotone"
                   dataKey={selectedMetric}
-                  stroke={metrics.find(m => m.id === selectedMetric)?.color}
-                  strokeWidth={3}
+                  stroke="#3b82f6"
+                  strokeWidth={5}
                   fillOpacity={1}
                   fill="url(#colorForecast)"
+                  dot={{ 
+                    fill: "#3b82f6", 
+                    r: 5,
+                    strokeWidth: 2,
+                    stroke: "rgba(255,255,255,0.3)"
+                  }}
+                  activeDot={{ 
+                    r: 8, 
+                    strokeWidth: 3,
+                    stroke: "rgba(255,255,255,0.4)",
+                    fill: "#3b82f6"
+                  }}
                 />
               </AreaChart>
             </ResponsiveContainer>

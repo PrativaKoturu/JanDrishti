@@ -50,7 +50,17 @@ export default function AuthDialog({ open, onOpenChange, mode: initialMode = "lo
         setFullName("")
         setPhoneNumber("")
       } else {
-        const response = await signup(email, password, fullName || undefined, phoneNumber || undefined)
+        // Validate phone number for signup
+        if (!phoneNumber || phoneNumber.length !== 10) {
+          setError("Phone number is required and must be 10 digits")
+          toast.error("Phone number required", {
+            description: "Please enter a valid 10-digit phone number"
+          })
+          setLoading(false)
+          return
+        }
+        
+        const response = await signup(email, password, fullName || undefined, phoneNumber)
         // Check if there's a message about email confirmation
         if (response && response.message) {
           setSuccessMessage(response.message)
@@ -146,18 +156,26 @@ export default function AuthDialog({ open, onOpenChange, mode: initialMode = "lo
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="phoneNumber">Phone Number</Label>
+                <Label htmlFor="phoneNumber">
+                  Phone Number <span className="text-red-400">*</span>
+                </Label>
                 <Input
                   id="phoneNumber"
                   type="tel"
-                  placeholder="+91 9876543210"
+                  placeholder="9876543210 (10 digits)"
                   value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
-                  pattern="[+]?[0-9\s()-]+"
-                  title="Phone number can contain digits, spaces, parentheses, hyphens, and an optional + prefix"
+                  onChange={(e) => {
+                    // Only allow digits, limit to 10
+                    const value = e.target.value.replace(/\D/g, '').slice(0, 10)
+                    setPhoneNumber(value)
+                  }}
+                  maxLength={10}
+                  required
+                  pattern="[0-9]{10}"
+                  title="Enter your 10-digit phone number"
                 />
                 <p className="text-xs text-muted-foreground">
-                  We'll send WhatsApp updates about air quality alerts
+                  Required for WhatsApp AQI updates and safety alerts. We'll format it automatically.
                 </p>
               </div>
             </>
