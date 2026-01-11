@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 from typing import List, Dict
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
+from apscheduler.triggers.interval import IntervalTrigger
 from dotenv import load_dotenv
 from supabase import create_client, Client
 from twilio_service import get_twilio_service
@@ -39,21 +40,12 @@ class WhatsAppScheduler:
             logger.warning("Twilio not configured. WhatsApp scheduler will not start.")
             return
         
-        # Schedule daily AQI updates at 8 AM IST (2:30 AM UTC)
+        # Schedule AQI updates every 5 minutes
         self.scheduler.add_job(
             self.send_daily_aqi_updates,
-            trigger=CronTrigger(hour=2, minute=30),  # 8 AM IST
+            trigger=IntervalTrigger(minutes=5),  # Every 5 minutes
             id='daily_aqi_whatsapp',
-            name='Send daily AQI updates via WhatsApp',
-            replace_existing=True
-        )
-        
-        # Schedule hourly updates for critical AQI (every hour)
-        self.scheduler.add_job(
-            self.send_critical_alerts,
-            trigger=CronTrigger(minute=0),  # Every hour
-            id='hourly_critical_alerts',
-            name='Send critical AQI alerts via WhatsApp',
+            name='Send AQI updates via WhatsApp every 5 minutes',
             replace_existing=True
         )
         
@@ -66,16 +58,19 @@ class WhatsAppScheduler:
             self.scheduler.shutdown()
             logger.info("WhatsApp scheduler stopped")
     
-    def get_active_subscriptions(self, frequency: str = "daily") -> List[Dict]:
+    def get_active_subscriptions(self, frequency: str = None) -> List[Dict]:
         """Get active WhatsApp subscriptions"""
         if not self.supabase:
             return []
         
         try:
-            response = self.supabase.table("whatsapp_subscriptions").select("*").eq("is_active", True).eq("frequency", frequency).execute()
+            query = self.supabase.table("whatsapp_subscriptions").select("*").eq("is_active", True)
+            if frequency:
+                query = query.eq("frequency", frequency)
+            response = query.execute()
             return response.data or []
         except Exception as e:
-            logger.error(f"Error fetching subscriptions: {e}")
+            logger.error(f"Error fetching WhatsApp subscriptions: {e}")
             return []
     
     def get_ward_aqi_data(self, ward_no: str) -> Dict:
@@ -103,11 +98,12 @@ class WhatsAppScheduler:
             return None
     
     def send_daily_aqi_updates(self):
-        """Send daily AQI updates to all subscribers"""
-        logger.info("Starting daily AQI WhatsApp updates")
+        """Send AQI updates to all WhatsApp subscribers (every 5 minutes)"""
+        logger.info("Starting AQI WhatsApp updates")
         
-        subscriptions = self.get_active_subscriptions("daily")
-        logger.info(f"Found {len(subscriptions)} daily subscriptions")
+        # Get all active subscriptions regardless of frequency (since we send every 5 minutes)
+        subscriptions = self.get_active_subscriptions(frequency=None)  # Get all active subscriptions
+        logger.info(f"Found {len(subscriptions)} active WhatsApp subscriptions")
         
         for subscription in subscriptions:
             try:
@@ -169,7 +165,7 @@ class WhatsAppScheduler:
             except Exception as e:
                 logger.error(f"Error sending update to {subscription.get('phone_number')}: {e}", exc_info=True)
         
-        logger.info("Completed daily AQI WhatsApp updates")
+        logger.info("Completed AQI WhatsApp updates")
     
     def send_critical_alerts(self):
         """Send critical AQI alerts (AQI > 200)"""

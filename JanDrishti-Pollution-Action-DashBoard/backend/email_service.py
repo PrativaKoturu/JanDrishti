@@ -194,7 +194,7 @@ class EmailService:
                 
                 <div class="footer">
                     <p>📱 Stay informed with JanDrishti</p>
-                    <p>Visit <a href="https://jandrishti.in">jandrishti.in</a> for more details</p>
+                    <p>Visit <a href="https://jan-drishti.vercel.app/">jan-drishti.vercel.app</a> for more details</p>
                     <p>To unsubscribe from these updates, please log in to your account</p>
                 </div>
             </div>

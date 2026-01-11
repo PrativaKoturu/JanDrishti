@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 from typing import List, Dict
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
+from apscheduler.triggers.interval import IntervalTrigger
 from dotenv import load_dotenv
 from supabase import create_client, Client
 from email_service import get_email_service
@@ -39,21 +40,12 @@ class EmailScheduler:
             logger.warning("Email service not configured. Email scheduler will not start.")
             return
         
-        # Schedule daily AQI updates at 8 AM IST (2:30 AM UTC)
+        # Schedule AQI updates every 5 minutes
         self.scheduler.add_job(
             self.send_daily_aqi_updates,
-            trigger=CronTrigger(hour=2, minute=30),  # 8 AM IST
+            trigger=IntervalTrigger(minutes=5),  # Every 5 minutes
             id='daily_aqi_email',
-            name='Send daily AQI updates via Email',
-            replace_existing=True
-        )
-        
-        # Schedule hourly updates for critical AQI (every hour)
-        self.scheduler.add_job(
-            self.send_critical_alerts,
-            trigger=CronTrigger(minute=0),  # Every hour
-            id='hourly_critical_alerts_email',
-            name='Send critical AQI alerts via Email',
+            name='Send AQI updates via Email every 5 minutes',
             replace_existing=True
         )
         
@@ -66,13 +58,16 @@ class EmailScheduler:
             self.scheduler.shutdown()
             logger.info("Email scheduler stopped")
     
-    def get_active_subscriptions(self, frequency: str = "daily") -> List[Dict]:
+    def get_active_subscriptions(self, frequency: str = None) -> List[Dict]:
         """Get active Email subscriptions"""
         if not self.supabase:
             return []
         
         try:
-            response = self.supabase.table("email_subscriptions").select("*").eq("is_active", True).eq("frequency", frequency).execute()
+            query = self.supabase.table("email_subscriptions").select("*").eq("is_active", True)
+            if frequency:
+                query = query.eq("frequency", frequency)
+            response = query.execute()
             return response.data or []
         except Exception as e:
             logger.error(f"Error fetching email subscriptions: {e}")
@@ -103,11 +98,12 @@ class EmailScheduler:
             return None
     
     def send_daily_aqi_updates(self):
-        """Send daily AQI updates to all email subscribers"""
-        logger.info("Starting daily AQI Email updates")
+        """Send AQI updates to all email subscribers (every 5 minutes)"""
+        logger.info("Starting AQI Email updates")
         
-        subscriptions = self.get_active_subscriptions("daily")
-        logger.info(f"Found {len(subscriptions)} daily email subscriptions")
+        # Get all active subscriptions regardless of frequency (since we send every 5 minutes)
+        subscriptions = self.get_active_subscriptions(frequency=None)  # Get all active subscriptions
+        logger.info(f"Found {len(subscriptions)} active email subscriptions")
         
         for subscription in subscriptions:
             try:
@@ -162,7 +158,7 @@ class EmailScheduler:
             except Exception as e:
                 logger.error(f"Error sending email update to {subscription.get('email')}: {e}", exc_info=True)
         
-        logger.info("Completed daily AQI Email updates")
+        logger.info("Completed AQI Email updates")
     
     def send_critical_alerts(self):
         """Send critical AQI alerts (AQI > 200) via Email"""
