@@ -230,9 +230,75 @@ To unsubscribe, log in to your account
         
         return self.send_email(to_email, subject, html_content, text_content)
     
-    def send_welcome_email(self, to_email: str, ward_no: Optional[str] = None) -> Dict[str, any]:
-        """Send welcome email after subscription"""
+    def send_welcome_email(self, to_email: str, ward_no: Optional[str] = None, aqi_data: Optional[Dict] = None) -> Dict[str, any]:
+        """Send welcome email after subscription with current AQI data if available"""
         subject = "🌍 Welcome to JanDrishti AQI Updates!"
+        
+        # Prepare AQI data section if available
+        aqi_section_html = ""
+        aqi_section_text = ""
+        
+        if aqi_data and aqi_data.get('aqi', 0) > 0:
+            aqi_value = aqi_data.get('aqi', 0)
+            pm25 = aqi_data.get('pm25', 0) or 0
+            pm10 = aqi_data.get('pm10', 0) or 0
+            ward_name = aqi_data.get('ward_name', f'Ward {ward_no}' if ward_no else 'Your Area')
+            
+            # Determine AQI status
+            if aqi_value <= 50:
+                status = "Good ✅"
+                emoji = "🟢"
+                color = "#22c55e"
+            elif aqi_value <= 100:
+                status = "Moderate ⚠️"
+                emoji = "🟡"
+                color = "#eab308"
+            elif aqi_value <= 150:
+                status = "Unhealthy for Sensitive Groups 🟠"
+                emoji = "🟠"
+                color = "#f97316"
+            elif aqi_value <= 200:
+                status = "Unhealthy 🔴"
+                emoji = "🔴"
+                color = "#ef4444"
+            elif aqi_value <= 300:
+                status = "Very Unhealthy 🟣"
+                emoji = "🟣"
+                color = "#a855f7"
+            else:
+                status = "Hazardous ⚫"
+                emoji = "⚫"
+                color = "#52525b"
+            
+            aqi_section_html = f"""
+                    <div class="info-box" style="border-left: 5px solid {color};">
+                        <h3 style="margin-top: 0;">📊 Current Air Quality</h3>
+                        <div style="text-align: center; padding: 15px 0;">
+                            <div style="font-size: 48px; font-weight: bold; color: {color}; margin: 10px 0;">{aqi_value}</div>
+                            <div style="font-size: 18px; color: {color}; margin: 10px 0;">{emoji} {status}</div>
+                            <div style="font-size: 14px; color: #6b7280; margin-top: 15px;">📍 {ward_name}</div>
+                        </div>
+                        <div style="display: flex; justify-content: space-around; margin-top: 20px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+                            <div style="text-align: center;">
+                                <div style="font-size: 12px; color: #6b7280;">PM2.5</div>
+                                <div style="font-size: 18px; font-weight: bold; color: {color};">{pm25:.1f} µg/m³</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 12px; color: #6b7280;">PM10</div>
+                                <div style="font-size: 18px; font-weight: bold; color: {color};">{pm10:.1f} µg/m³</div>
+                            </div>
+                        </div>
+                    </div>
+            """
+            
+            aqi_section_text = f"""
+📊 Current Air Quality:
+📍 Location: {ward_name}
+{emoji} AQI: {aqi_value} - {status}
+• PM2.5: {pm25:.1f} µg/m³
+• PM10: {pm10:.1f} µg/m³
+
+"""
         
         html_content = f"""
         <!DOCTYPE html>
@@ -264,6 +330,8 @@ To unsubscribe, log in to your account
                         <p>You've successfully subscribed to AQI updates{f' for {ward_no}' if ward_no else ' for all wards'}.</p>
                     </div>
                     
+                    {aqi_section_html}
+                    
                     <div class="info-box">
                         <h3 style="margin-top: 0;">📬 What You'll Receive:</h3>
                         <ul>
@@ -294,7 +362,7 @@ To unsubscribe, log in to your account
 ✅ Subscription Successful!
 You've successfully subscribed to AQI updates{f' for {ward_no}' if ward_no else ' for all wards'}.
 
-📬 What You'll Receive:
+{aqi_section_text}📬 What You'll Receive:
 • Daily AQI Updates - Get air quality reports every morning
 • Health Precautions - Important safety recommendations
 • Emergency Alerts - Immediate notifications for critical conditions

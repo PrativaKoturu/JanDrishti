@@ -25,6 +25,7 @@ from middleware.error_handler import AppException
 from twilio_service import get_twilio_service
 from whatsapp_scheduler import get_whatsapp_scheduler
 from email_service import get_email_service
+from email_scheduler import get_email_scheduler
 from auto_sandbox_helper import get_sandbox_helper
 import geopandas as gpd
 import pandas as pd
@@ -60,6 +61,14 @@ async def lifespan(app: FastAPI):
         print("✓ WhatsApp Scheduler started")
     except Exception as e:
         print(f"⚠ Warning: Could not start WhatsApp Scheduler: {e}")
+    
+    # Startup: Start the Email scheduler
+    try:
+        email_scheduler = get_email_scheduler()
+        email_scheduler.start()
+        print("✓ Email Scheduler started")
+    except Exception as e:
+        print(f"⚠ Warning: Could not start Email Scheduler: {e}")
     
     yield
     
@@ -2621,9 +2630,17 @@ async def subscribe_email(
             logger.warning(f"Database error (non-critical): {db_error}")
             message = "Email subscription created successfully"
         
-        # Send welcome email immediately
+        # Send welcome email immediately with current AQI data
         try:
-            email_service.send_welcome_email(user_email, subscription.ward_no)
+            aqi_data = None
+            if subscription.ward_no:
+                # Try to get current AQI data
+                try:
+                    collector = get_collector()
+                    aqi_data = collector.get_latest_ward_data(subscription.ward_no)
+                except Exception as aqi_error:
+                    logger.warning(f"Could not fetch AQI data for welcome email: {aqi_error}")
+            email_service.send_welcome_email(user_email, subscription.ward_no, aqi_data)
         except Exception as e:
             logger.warning(f"Failed to send welcome email: {e}")
         
