@@ -282,14 +282,14 @@ export default function MainMetrics({ selectedWard }: MainMetricsProps) {
                 </div>
               </div>
 
-              <div className="flex gap-4">
+              {/* <div className="flex gap-4">
                 <button className="p-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors text-muted-foreground hover:text-foreground">
                   <Share2 size={20} />
                 </button>
                 <button className="px-6 py-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors font-bold text-sm">
                   View History
                 </button>
-              </div>
+              </div> */}
             </div>
 
             {/* Metrics Grid */}

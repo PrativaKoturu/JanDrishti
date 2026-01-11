@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { RefreshCw, Maximize2, Minimize2, Search, X, Layers2, MapPin, ZoomIn, ZoomOut, RotateCcw, Clock, AlertCircle, CheckCircle2, Loader2, Info, TrendingUp, TrendingDown, Activity, BarChart3, Filter, Eye, EyeOff, HelpCircle, Download, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getBackendUrl } from '@/lib/backend-url';
 
 // Import Leaflet CSS - must be done at top level for Next.js to process
 import 'leaflet/dist/leaflet.css';
@@ -111,7 +112,7 @@ const DelhiAQIMap: React.FC = () => {
       }
       setError(null);
       
-      const backendUrl = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL || 'https://jandrishti.onrender.com';
+      const backendUrl = getBackendUrl();
       console.log('📡 Fetching from:', `${backendUrl}/api/delhi-aqi`);
       
       const response = await fetch(`${backendUrl}/api/delhi-aqi`, {
@@ -254,7 +255,7 @@ const DelhiAQIMap: React.FC = () => {
   const triggerRecompute = useCallback(async () => {
     try {
       setRefreshing(true);
-      const backendUrl = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL || 'https://jandrishti.onrender.com';
+      const backendUrl = getBackendUrl();
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
       const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
       
@@ -457,7 +458,7 @@ const DelhiAQIMap: React.FC = () => {
   useEffect(() => {
     console.log('🗺️ DelhiAQIMap component mounted, fetching data...');
     console.log('Map container:', mapContainer.current);
-    console.log('Backend URL:', process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL || 'https://jandrishti.onrender.com');
+    console.log('Backend URL:', getBackendUrl());
     fetchData();
   }, [fetchData]);
 

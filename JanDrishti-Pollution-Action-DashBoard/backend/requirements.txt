@@ -20,4 +20,5 @@ rtree
 pyproj
 redis==5.0.1
 apscheduler==3.10.4
+twilio==9.3.0
 

@@ -477,8 +477,8 @@ export default function CitizenReporting({ selectedWard }: CitizenReportingProps
                 <p className="text-xs text-muted-foreground">This month</p>
               </div>
             </div>
-            <p className="text-3xl font-bold text-foreground">127</p>
-            <p className="text-sm text-primary mt-1">↑ 23% from last month</p>
+            <p className="text-3xl font-bold text-foreground">0</p>
+            <p className="text-sm text-primary mt-1">↑ 0 from last month</p>
           </div>
 
           <div className="rounded-3xl border border-border/40 glass-effect p-6">
@@ -491,8 +491,8 @@ export default function CitizenReporting({ selectedWard }: CitizenReportingProps
                 <p className="text-xs text-muted-foreground">Resolution time</p>
               </div>
             </div>
-            <p className="text-3xl font-bold text-foreground">4.2h</p>
-            <p className="text-sm text-primary mt-1">↓ 15% improvement</p>
+            <p className="text-3xl font-bold text-foreground">0</p>
+            <p className="text-sm text-primary mt-1">↓ 0improvement</p>
           </div>
 
           <div className="rounded-3xl border border-border/40 glass-effect p-6">
@@ -505,8 +505,8 @@ export default function CitizenReporting({ selectedWard }: CitizenReportingProps
                 <p className="text-xs text-muted-foreground">Success rate</p>
               </div>
             </div>
-            <p className="text-3xl font-bold text-foreground">89%</p>
-            <p className="text-sm text-primary mt-1">↑ 5% this month</p>
+            <p className="text-3xl font-bold text-foreground">0</p>
+            <p className="text-sm text-primary mt-1">↑ 0 this month</p>
           </div>
         </div>
       )}

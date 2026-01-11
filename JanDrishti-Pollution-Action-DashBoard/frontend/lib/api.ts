@@ -1,7 +1,8 @@
 import axios from 'axios'
+import { getBackendUrl } from './backend-url'
 
 // API Configuration
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://jandrishti.onrender.com'
+const API_BASE_URL = getBackendUrl()
 
 // Create axios instance
 export const api = axios.create({
@@ -192,6 +193,56 @@ export const chatAPI = {
 
   async sendMessage(message: string) {
     const response = await api.post('/api/chat/messages', { message })
+    return response.data
+  }
+}
+
+export const whatsappService = {
+  async subscribe(data: {
+    phone_number?: string
+    ward_no?: string
+    subscription_type?: string
+    frequency?: string
+  }) {
+    const response = await api.post('/api/whatsapp/subscribe', data)
+    return response.data
+  },
+
+  async quickSubscribe(wardNo?: string) {
+    const params = wardNo ? { ward_no: wardNo } : {}
+    const response = await api.post('/api/whatsapp/quick-subscribe', null, { params })
+    return response.data
+  },
+
+  async getSubscription() {
+    const response = await api.get('/api/whatsapp/subscription')
+    return response.data
+  },
+
+  async updateSubscription(subscriptionId: string, data: {
+    ward_no?: string
+    subscription_type?: string
+    frequency?: string
+    is_active?: boolean
+  }) {
+    const response = await api.put(`/api/whatsapp/subscription/${subscriptionId}`, data)
+    return response.data
+  },
+
+  async unsubscribe(subscriptionId: string) {
+    const response = await api.delete(`/api/whatsapp/subscription/${subscriptionId}`)
+    return response.data
+  }
+}
+
+export const emailService = {
+  async subscribe(data: {
+    email?: string
+    ward_no?: string
+    subscription_type?: string
+    frequency?: string
+  }) {
+    const response = await api.post('/api/email/subscribe', data)
     return response.data
   }
 }

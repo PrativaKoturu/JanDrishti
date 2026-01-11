@@ -22,6 +22,11 @@ from chat_cache import get_chat_cache
 from aqi_collector import AQICollector
 from aqi_collector_singleton import get_collector
 from middleware.error_handler import AppException
+from twilio_service import get_twilio_service
+from whatsapp_scheduler import get_whatsapp_scheduler
+from email_service import get_email_service
+from email_scheduler import get_email_scheduler
+from auto_sandbox_helper import get_sandbox_helper
 import geopandas as gpd
 import pandas as pd
 from shapely.geometry import Point
@@ -49,15 +54,38 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         print(f"⚠ Warning: Could not start AQI Scheduler: {e}")
     
+    # Startup: Start the WhatsApp scheduler
+    try:
+        whatsapp_scheduler = get_whatsapp_scheduler()
+        whatsapp_scheduler.start()
+        print("✓ WhatsApp Scheduler started")
+    except Exception as e:
+        print(f"⚠ Warning: Could not start WhatsApp Scheduler: {e}")
+    
+    # Startup: Start the Email scheduler
+    try:
+        email_scheduler = get_email_scheduler()
+        email_scheduler.start()
+        print("✓ Email Scheduler started")
+    except Exception as e:
+        print(f"⚠ Warning: Could not start Email Scheduler: {e}")
+    
     yield
     
-    # Shutdown: Stop the scheduler
+    # Shutdown: Stop the schedulers
     try:
         scheduler = get_scheduler()
         scheduler.shutdown()
         print("✓ AQI Scheduler stopped")
     except Exception as e:
         print(f"⚠ Warning: Error stopping AQI Scheduler: {e}")
+    
+    try:
+        whatsapp_scheduler = get_whatsapp_scheduler()
+        whatsapp_scheduler.shutdown()
+        print("✓ WhatsApp Scheduler stopped")
+    except Exception as e:
+        print(f"⚠ Warning: Error stopping WhatsApp Scheduler: {e}")
 
 app = FastAPI(title="JanDrishti API", version="1.0.0", lifespan=lifespan)
 
@@ -147,6 +175,24 @@ class ReportCreate(BaseModel):
     priority: Optional[str] = "medium"
     ward: Optional[str] = None
     images: Optional[List[str]] = []
+
+class WhatsAppSubscriptionCreate(BaseModel):
+    phone_number: Optional[str] = None  # Optional - will use profile phone if not provided
+    ward_no: Optional[str] = None
+    subscription_type: Optional[str] = "aqi_updates"  # 'aqi_updates', 'alerts', 'all'
+    frequency: Optional[str] = "daily"  # 'hourly', 'daily', 'alerts_only'
+
+class WhatsAppSubscriptionUpdate(BaseModel):
+    ward_no: Optional[str] = None
+    subscription_type: Optional[str] = None
+    frequency: Optional[str] = None
+    is_active: Optional[bool] = None
+
+class EmailSubscriptionCreate(BaseModel):
+    email: Optional[str] = None  # Optional - will use profile email if not provided
+    ward_no: Optional[str] = None
+    subscription_type: Optional[str] = "aqi_updates"
+    frequency: Optional[str] = "daily"
 
 class ReportResponse(BaseModel):
     id: str
@@ -679,18 +725,54 @@ def save_cache_to_db(data: dict):
             raise e
 
 # Authentication Endpoints
+def format_phone_for_twilio(phone: str) -> str:
+    """
+    Format phone number to E.164 format for Twilio
+    Accepts: 10-digit Indian number or already formatted number
+    Returns: +91XXXXXXXXXX format
+    """
+    if not phone:
+        return phone
+    
+    # Remove all non-digit characters
+    digits = ''.join(filter(str.isdigit, phone))
+    
+    # If already starts with +, return as is
+    if phone.startswith('+'):
+        return phone
+    
+    # If 10 digits, assume Indian number and add +91
+    if len(digits) == 10:
+        return f"+91{digits}"
+    
+    # If 12 digits and starts with 91, add +
+    if len(digits) == 12 and digits.startswith('91'):
+        return f"+{digits}"
+    
+    # If 11 digits and starts with 0, remove 0 and add +91
+    if len(digits) == 11 and digits.startswith('0'):
+        return f"+91{digits[1:]}"
+    
+    # Return with + prefix if not already present
+    return f"+{digits}" if digits else phone
+
 @app.post("/api/auth/signup", response_model=TokenResponse)
 async def signup(user_data: UserSignup):
     """Register a new user"""
     try:
+        # Format phone number for Twilio (E.164 format)
+        formatted_phone = None
+        if user_data.phone_number:
+            formatted_phone = format_phone_for_twilio(user_data.phone_number)
+        
         # Create user in Supabase Auth
         user_metadata = {
             "full_name": user_data.full_name or ""
         }
         
         # Add phone number to metadata if provided
-        if user_data.phone_number:
-            user_metadata["phone_number"] = user_data.phone_number
+        if formatted_phone:
+            user_metadata["phone_number"] = formatted_phone
         
         response = supabase.auth.sign_up({
             "email": user_data.email,
@@ -703,6 +785,68 @@ async def signup(user_data: UserSignup):
         if not response.user:
             raise HTTPException(status_code=400, detail="Failed to create user")
         
+        # Create or update profile in profiles table
+        # Try multiple approaches to ensure phone is saved
+        try:
+            profile_data = {
+                "id": response.user.id,
+                "email": user_data.email,
+                "full_name": user_data.full_name or None,
+                "phone": formatted_phone,  # Save to profiles.phone for Twilio
+                "updated_at": datetime.utcnow().isoformat()
+            }
+            
+            # First, try to check if profile exists
+            try:
+                existing_profile = supabase_admin.table("profiles").select("id").eq("id", response.user.id).execute()
+                
+                if existing_profile.data and len(existing_profile.data) > 0:
+                    # Profile exists, update it
+                    update_data = {
+                        "full_name": profile_data["full_name"],
+                        "phone": profile_data["phone"],
+                        "updated_at": profile_data["updated_at"]
+                    }
+                    # Only update email if it's different
+                    if profile_data["email"]:
+                        update_data["email"] = profile_data["email"]
+                    
+                    profile_response = supabase_admin.table("profiles").update(update_data).eq("id", response.user.id).execute()
+                    logger.info(f"Profile updated successfully for user {response.user.id} with phone {formatted_phone}")
+                else:
+                    # Profile doesn't exist, insert it
+                    profile_response = supabase_admin.table("profiles").insert(profile_data).execute()
+                    logger.info(f"Profile created successfully for user {response.user.id} with phone {formatted_phone}")
+                    
+            except Exception as check_error:
+                # If check fails, try direct upsert
+                logger.warning(f"Profile check failed, trying upsert: {check_error}")
+                try:
+                    # Use upsert as fallback
+                    profile_response = supabase_admin.table("profiles").upsert(
+                        profile_data,
+                        on_conflict="id"
+                    ).execute()
+                    logger.info(f"Profile upserted successfully for user {response.user.id} with phone {formatted_phone}")
+                except Exception as upsert_error:
+                    # Last resort: try update only (profile might exist from trigger)
+                    logger.warning(f"Upsert failed, trying update only: {upsert_error}")
+                    try:
+                        supabase_admin.table("profiles").update({
+                            "phone": formatted_phone,
+                            "full_name": profile_data["full_name"],
+                            "updated_at": profile_data["updated_at"]
+                        }).eq("id", response.user.id).execute()
+                        logger.info(f"Profile phone updated via update-only method for user {response.user.id}")
+                    except Exception as update_error:
+                        logger.error(f"All profile update methods failed: {update_error}", exc_info=True)
+                        raise update_error
+                
+        except Exception as profile_error:
+            logger.error(f"Profile creation/update failed: {profile_error}", exc_info=True)
+            # Don't fail signup if profile update fails - we'll sync on login
+            # But log it so we can debug
+        
         # Check if email confirmation is required
         email_confirmation_required = not response.session
         
@@ -711,11 +855,13 @@ async def signup(user_data: UserSignup):
             user={
                 "id": response.user.id,
                 "email": response.user.email,
-                "full_name": user_data.full_name
+                "full_name": user_data.full_name,
+                "phone_number": formatted_phone
             },
             message="Email confirmation required. Please check your email and confirm your account before logging in." if email_confirmation_required else None
         )
     except Exception as e:
+        logger.error(f"Signup error: {e}", exc_info=True)
         raise HTTPException(status_code=400, detail=str(e))
 
 @app.post("/api/auth/login", response_model=TokenResponse)
@@ -748,14 +894,30 @@ async def login(credentials: UserLogin):
         try:
             profile = supabase.table("profiles").select("*").eq("id", response.user.id).single().execute()
             full_name = profile.data.get("full_name") if profile.data else None
+            phone_from_profile = profile.data.get("phone") if profile.data else None
         except Exception as profile_error:
             # Profile might not exist yet, that's okay
             print(f"DEBUG: Profile fetch error (non-critical): {profile_error}")
             full_name = None
+            phone_from_profile = None
         
-        # Get phone number from user metadata
+        # Get phone number from user metadata (fallback)
         user_metadata = response.user.user_metadata if hasattr(response.user, 'user_metadata') else {}
-        phone_number = user_metadata.get("phone_number")
+        phone_from_metadata = user_metadata.get("phone_number")
+        
+        # Use phone from profile if available, otherwise from metadata
+        phone_number = phone_from_profile or phone_from_metadata
+        
+        # If phone is in metadata but not in profile, update profile
+        if phone_from_metadata and not phone_from_profile:
+            try:
+                supabase_admin.table("profiles").update({
+                    "phone": phone_from_metadata,
+                    "updated_at": datetime.utcnow().isoformat()
+                }).eq("id", response.user.id).execute()
+                logger.info(f"Updated phone number in profile for user {response.user.id}")
+            except Exception as update_error:
+                logger.warning(f"Could not update phone in profile: {update_error}")
         
         return TokenResponse(
             access_token=response.session.access_token,
@@ -806,9 +968,13 @@ async def get_current_user_info(current_user = Depends(get_current_user)):
     try:
         profile = supabase.table("profiles").select("*").eq("id", current_user.id).single().execute()
         
-        # Get phone number from user metadata
-        user_metadata = current_user.user_metadata if hasattr(current_user, 'user_metadata') else {}
-        phone_number = user_metadata.get("phone_number")
+        # Get phone number from profile table (phone field)
+        phone_number = profile.data.get("phone") if profile.data else None
+        
+        # Fallback to user metadata if not in profile
+        if not phone_number:
+            user_metadata = current_user.user_metadata if hasattr(current_user, 'user_metadata') else {}
+            phone_number = user_metadata.get("phone_number")
         
         return {
             "id": current_user.id,
@@ -2057,6 +2223,436 @@ async def trigger_daily_calculation():
         scheduler.trigger_daily_calculation()
         return {"message": "Daily average calculation triggered successfully"}
     except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# WhatsApp Subscription Endpoints
+@app.post("/api/whatsapp/subscribe")
+async def subscribe_whatsapp(
+    subscription: WhatsAppSubscriptionCreate,
+    current_user = Depends(get_current_user)
+):
+    """Subscribe to WhatsApp AQI updates"""
+    try:
+        # Check if Twilio is configured
+        twilio_service = get_twilio_service()
+        if not twilio_service.is_configured():
+            raise HTTPException(
+                status_code=503,
+                detail="WhatsApp service is not configured. Please contact administrator."
+            )
+        
+        # Get phone number from profile if not provided
+        phone_number = subscription.phone_number
+        if not phone_number:
+            try:
+                profile = supabase.table("profiles").select("phone").eq("id", current_user.id).single().execute()
+                if profile.data and profile.data.get("phone"):
+                    phone_number = profile.data.get("phone")
+                else:
+                    raise HTTPException(
+                        status_code=400,
+                        detail="Phone number not found in profile. Please provide a phone number."
+                    )
+            except Exception as e:
+                if isinstance(e, HTTPException):
+                    raise
+                raise HTTPException(
+                    status_code=400,
+                    detail="Phone number not found in profile. Please provide a phone number."
+                )
+        
+        # Check if subscription already exists
+        existing = supabase.table("whatsapp_subscriptions").select("*").eq("user_id", current_user.id).eq("phone_number", phone_number).execute()
+        
+        subscription_data = {
+            "user_id": current_user.id,
+            "phone_number": phone_number,
+            "ward_no": subscription.ward_no,
+            "subscription_type": subscription.subscription_type,
+            "frequency": subscription.frequency,
+            "is_active": True
+        }
+        
+        if existing.data and len(existing.data) > 0:
+            # Update existing subscription
+            response = supabase.table("whatsapp_subscriptions").update(subscription_data).eq("id", existing.data[0]["id"]).execute()
+            message = "Subscription updated successfully"
+        else:
+            # Create new subscription
+            response = supabase.table("whatsapp_subscriptions").insert(subscription_data).execute()
+            message = "Subscribed to WhatsApp updates successfully"
+        
+        if not response.data:
+            raise HTTPException(status_code=400, detail="Failed to create subscription")
+        
+        # Send welcome message
+        whatsapp_sent = False
+        is_sandbox = False
+        try:
+            # Check if using sandbox (sandbox number is +14155238886)
+            whatsapp_from = twilio_service.whatsapp_from if hasattr(twilio_service, 'whatsapp_from') else os.getenv("TWILIO_WHATSAPP_FROM", "")
+            is_sandbox = "14155238886" in whatsapp_from or "sandbox" in whatsapp_from.lower()
+            
+            welcome_msg = f"""🌍 Welcome to JanDrishti WhatsApp Updates!
+
+You've successfully subscribed to AQI updates for {subscription.ward_no or 'all wards'}.
+
+You'll receive:
+• Daily AQI updates
+• Health precautions
+• Emergency alerts
+
+To unsubscribe, reply STOP or visit jandrishti.in
+
+Stay informed, stay safe! 🌱"""
+            result = twilio_service.send_message(phone_number, welcome_msg)
+            if result.get("success"):
+                whatsapp_sent = True
+        except Exception as e:
+            logger.warning(f"Failed to send welcome message: {e}")
+        
+        # Always send sandbox email if using sandbox mode, or if WhatsApp failed
+        if is_sandbox or not whatsapp_sent:
+            try:
+                email_service = get_email_service()
+                sandbox_helper = get_sandbox_helper()
+                
+                logger.info(f"Sending sandbox email - is_sandbox: {is_sandbox}, whatsapp_sent: {whatsapp_sent}, email_configured: {email_service.is_configured}")
+                
+                if email_service.is_configured:
+                    # Get user email
+                    try:
+                        profile = supabase.table("profiles").select("email").eq("id", current_user.id).single().execute()
+                        user_email = profile.data.get("email") if profile.data else current_user.email
+                    except:
+                        user_email = current_user.email
+                    
+                    if not user_email:
+                        logger.warning("User email not found, cannot send sandbox instructions")
+                    else:
+                        # Create email with sandbox join instructions
+                        join_link = sandbox_helper.get_whatsapp_join_link()
+                        join_instructions_html = sandbox_helper.get_join_instructions_html(user_email)
+                        join_instructions_text = sandbox_helper.get_join_instructions_text()
+                        
+                        subject = "📱 Complete Your WhatsApp Subscription Setup"
+                        
+                        html_content = f"""
+                        <!DOCTYPE html>
+                        <html>
+                        <head>
+                            <meta charset="UTF-8">
+                            <style>
+                                body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                                .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                                .header {{ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }}
+                                .content {{ background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px; }}
+                                .success-box {{ background: #d1fae5; border-left: 5px solid #10b981; padding: 20px; margin: 20px 0; border-radius: 5px; }}
+                                .cta-button {{ display: inline-block; background: #25D366; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; margin: 20px 0; }}
+                                .footer {{ text-align: center; padding: 20px; color: #6b7280; font-size: 12px; }}
+                            </style>
+                        </head>
+                        <body>
+                            <div class="container">
+                                <div class="header">
+                                    <h1>📱 WhatsApp Setup Required</h1>
+                                    <p>Complete Your Subscription</p>
+                                </div>
+                                
+                                <div class="content">
+                                    <div class="success-box">
+                                        <h2 style="margin-top: 0; color: #065f46;">✅ Subscription Created!</h2>
+                                        <p>Your WhatsApp subscription has been created for <strong>{subscription.ward_no or 'all wards'}</strong>.</p>
+                                        <p>To start receiving messages, you just need to join our WhatsApp sandbox (one-time setup).</p>
+                                    </div>
+                                    
+                                    {join_instructions_html}
+                                </div>
+                                
+                                <div class="footer">
+                                    <p>Once you join the sandbox, you'll automatically start receiving WhatsApp notifications!</p>
+                                    <p>Visit <a href="https://jandrishti.in">jandrishti.in</a> to manage your subscriptions</p>
+                                </div>
+                            </div>
+                        </body>
+                        </html>
+                        """
+                        
+                        text_content = f"""
+📱 WhatsApp Setup Required
+
+✅ Subscription Created!
+Your WhatsApp subscription has been created for {subscription.ward_no or 'all wards'}.
+
+To start receiving messages, you just need to join our WhatsApp sandbox (one-time setup).
+
+{join_instructions_text}
+
+Once you join the sandbox, you'll automatically start receiving WhatsApp notifications!
+
+Visit jandrishti.in to manage your subscriptions
+                        """
+                        
+                        email_result = email_service.send_email(user_email, subject, html_content, text_content)
+                        if email_result.get("success"):
+                            logger.info(f"✅ Successfully sent sandbox join instructions to {user_email}")
+                        else:
+                            logger.error(f"❌ Failed to send sandbox email to {user_email}: {email_result.get('error')}")
+                else:
+                    logger.warning("Email service not configured - cannot send sandbox instructions. Please configure SMTP settings in .env")
+            except Exception as email_error:
+                logger.error(f"❌ Exception while sending sandbox join instructions via email: {email_error}", exc_info=True)
+        
+        return {
+            "message": message,
+            "subscription": response.data[0] if response.data else None
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error subscribing to WhatsApp: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/whatsapp/subscription")
+async def get_whatsapp_subscription(current_user = Depends(get_current_user)):
+    """Get user's WhatsApp subscription status"""
+    try:
+        response = supabase.table("whatsapp_subscriptions").select("*").eq("user_id", current_user.id).execute()
+        return {
+            "subscriptions": response.data or [],
+            "has_active_subscription": any(sub.get("is_active", False) for sub in (response.data or []))
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.put("/api/whatsapp/subscription/{subscription_id}")
+async def update_whatsapp_subscription(
+    subscription_id: str,
+    subscription: WhatsAppSubscriptionUpdate,
+    current_user = Depends(get_current_user)
+):
+    """Update WhatsApp subscription"""
+    try:
+        # Verify ownership
+        existing = supabase.table("whatsapp_subscriptions").select("user_id").eq("id", subscription_id).single().execute()
+        if not existing.data or existing.data["user_id"] != current_user.id:
+            raise HTTPException(status_code=403, detail="Not authorized")
+        
+        update_data = {}
+        if subscription.ward_no is not None:
+            update_data["ward_no"] = subscription.ward_no
+        if subscription.subscription_type is not None:
+            update_data["subscription_type"] = subscription.subscription_type
+        if subscription.frequency is not None:
+            update_data["frequency"] = subscription.frequency
+        if subscription.is_active is not None:
+            update_data["is_active"] = subscription.is_active
+        
+        update_data["updated_at"] = datetime.utcnow().isoformat()
+        
+        response = supabase.table("whatsapp_subscriptions").update(update_data).eq("id", subscription_id).execute()
+        
+        if not response.data:
+            raise HTTPException(status_code=404, detail="Subscription not found")
+        
+        return {"message": "Subscription updated successfully", "subscription": response.data[0]}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/whatsapp/quick-subscribe")
+async def quick_subscribe_whatsapp(
+    ward_no: Optional[str] = Query(None),
+    current_user = Depends(get_current_user)
+):
+    """Quick subscribe using phone from profile"""
+    try:
+        # Get phone from profile
+        profile = supabase.table("profiles").select("phone").eq("id", current_user.id).single().execute()
+        phone_number = profile.data.get("phone") if profile.data else None
+        
+        if not phone_number:
+            raise HTTPException(
+                status_code=400,
+                detail="Phone number not found in your profile. Please add a phone number to your profile first."
+            )
+        
+        # Use the subscribe endpoint logic
+        twilio_service = get_twilio_service()
+        if not twilio_service.is_configured():
+            raise HTTPException(
+                status_code=503,
+                detail="WhatsApp service is not configured. Please contact administrator."
+            )
+        
+        # Check if subscription already exists
+        existing = supabase.table("whatsapp_subscriptions").select("*").eq("user_id", current_user.id).eq("phone_number", phone_number).execute()
+        
+        subscription_data = {
+            "user_id": current_user.id,
+            "phone_number": phone_number,
+            "ward_no": ward_no,
+            "subscription_type": "aqi_updates",
+            "frequency": "daily",
+            "is_active": True
+        }
+        
+        if existing.data and len(existing.data) > 0:
+            # Update existing subscription
+            response = supabase.table("whatsapp_subscriptions").update(subscription_data).eq("id", existing.data[0]["id"]).execute()
+            message = "Subscription updated successfully"
+        else:
+            # Create new subscription
+            response = supabase.table("whatsapp_subscriptions").insert(subscription_data).execute()
+            message = "Subscribed to WhatsApp updates successfully"
+        
+        if not response.data:
+            raise HTTPException(status_code=400, detail="Failed to create subscription")
+        
+        # Send welcome message
+        try:
+            welcome_msg = f"""🌍 Welcome to JanDrishti WhatsApp Updates!
+
+You've successfully subscribed to AQI updates for {ward_no or 'all wards'}.
+
+You'll receive:
+• Daily AQI updates
+• Health precautions
+• Emergency alerts
+
+To unsubscribe, visit jandrishti.in
+
+Stay informed, stay safe! 🌱"""
+            twilio_service.send_message(phone_number, welcome_msg)
+        except Exception as e:
+            logger.warning(f"Failed to send welcome message: {e}")
+        
+        return {
+            "message": message,
+            "subscription": response.data[0] if response.data else None
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error in quick subscribe: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.delete("/api/whatsapp/subscription/{subscription_id}")
+async def unsubscribe_whatsapp(
+    subscription_id: str,
+    current_user = Depends(get_current_user)
+):
+    """Unsubscribe from WhatsApp updates"""
+    try:
+        # Verify ownership
+        existing = supabase.table("whatsapp_subscriptions").select("*").eq("id", subscription_id).single().execute()
+        if not existing.data or existing.data["user_id"] != current_user.id:
+            raise HTTPException(status_code=403, detail="Not authorized")
+        
+        # Deactivate subscription
+        response = supabase.table("whatsapp_subscriptions").update({
+            "is_active": False,
+            "updated_at": datetime.utcnow().isoformat()
+        }).eq("id", subscription_id).execute()
+        
+        # Send goodbye message
+        try:
+            twilio_service = get_twilio_service()
+            if twilio_service.is_configured():
+                goodbye_msg = """👋 You've unsubscribed from JanDrishti WhatsApp updates.
+
+You can resubscribe anytime at jandrishti.in
+
+Thank you for using JanDrishti! 🌱"""
+                twilio_service.send_message(existing.data["phone_number"], goodbye_msg)
+        except Exception as e:
+            logger.warning(f"Failed to send goodbye message: {e}")
+        
+        return {"message": "Unsubscribed successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Email Subscription Endpoints (Simple & Immediate Solution)
+@app.post("/api/email/subscribe")
+async def subscribe_email(
+    subscription: EmailSubscriptionCreate,
+    current_user = Depends(get_current_user)
+):
+    """Subscribe to Email AQI updates - Works immediately!"""
+    try:
+        # Check if email service is configured
+        email_service = get_email_service()
+        if not email_service.is_configured:
+            raise HTTPException(
+                status_code=503,
+                detail="Email service is not configured. Please contact administrator."
+            )
+        
+        # Get email from user if not provided
+        user_email = subscription.email or current_user.email
+        
+        if not user_email:
+            raise HTTPException(
+                status_code=400,
+                detail="Email address is required"
+            )
+        
+        # Create subscription record (using email_subscriptions table if exists, otherwise just send email)
+        try:
+            # Try to create subscription record
+            subscription_data = {
+                "user_id": current_user.id,
+                "email": user_email,
+                "ward_no": subscription.ward_no,
+                "subscription_type": subscription.subscription_type,
+                "frequency": subscription.frequency,
+                "is_active": True
+            }
+            
+            # Check if table exists and create subscription
+            try:
+                existing = supabase.table("email_subscriptions").select("*").eq("user_id", current_user.id).eq("email", user_email).execute()
+                
+                if existing.data and len(existing.data) > 0:
+                    response = supabase.table("email_subscriptions").update(subscription_data).eq("id", existing.data[0]["id"]).execute()
+                    message = "Subscription updated successfully"
+                else:
+                    response = supabase.table("email_subscriptions").insert(subscription_data).execute()
+                    message = "Subscribed to email updates successfully"
+            except Exception as table_error:
+                # Table doesn't exist yet - that's okay, we'll still send email
+                logger.info(f"email_subscriptions table not found, sending email anyway: {table_error}")
+                message = "Email subscription created successfully"
+        except Exception as db_error:
+            logger.warning(f"Database error (non-critical): {db_error}")
+            message = "Email subscription created successfully"
+        
+        # Send welcome email immediately with current AQI data
+        try:
+            aqi_data = None
+            if subscription.ward_no:
+                # Try to get current AQI data
+                try:
+                    collector = get_collector()
+                    aqi_data = collector.get_latest_ward_data(subscription.ward_no)
+                except Exception as aqi_error:
+                    logger.warning(f"Could not fetch AQI data for welcome email: {aqi_error}")
+            email_service.send_welcome_email(user_email, subscription.ward_no, aqi_data)
+        except Exception as e:
+            logger.warning(f"Failed to send welcome email: {e}")
+        
+        return {
+            "message": message,
+            "email": user_email,
+            "ward_no": subscription.ward_no
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error subscribing to email: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 # Health Check Endpoints
