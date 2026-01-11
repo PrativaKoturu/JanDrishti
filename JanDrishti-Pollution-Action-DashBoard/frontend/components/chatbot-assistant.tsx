@@ -1,9 +1,9 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { useAuth } from "@/context/auth-context"
 import { chatAPI } from "@/lib/api"
-import AuthDialog from "@/components/auth-dialog"
 import { toast } from "sonner"
 
 interface Message {
@@ -17,11 +17,11 @@ interface Message {
 }
 
 export default function ChatbotAssistant() {
+  const router = useRouter()
   const [isOpen, setIsOpen] = useState(false)
   const [messages, setMessages] = useState<Message[]>([])
   const [inputValue, setInputValue] = useState("")
   const [isTyping, setIsTyping] = useState(false)
-  const [showAuthDialog, setShowAuthDialog] = useState(false)
   const [loading, setLoading] = useState(false)
 
   const { isAuthenticated, user } = useAuth()
@@ -116,7 +116,7 @@ export default function ChatbotAssistant() {
 
     // Check authentication
     if (!isAuthenticated) {
-      setShowAuthDialog(true)
+      router.push('/login')
       return
     }
 
@@ -177,7 +177,7 @@ export default function ChatbotAssistant() {
 
   const handleSuggestionClick = (suggestion: string) => {
     if (suggestion === "Login to Chat") {
-      setShowAuthDialog(true)
+      router.push('/login')
       return
     }
     handleSendMessage(suggestion)
@@ -294,7 +294,7 @@ export default function ChatbotAssistant() {
             {!isAuthenticated ? (
               <div className="text-center py-2">
                 <button
-                  onClick={() => setShowAuthDialog(true)}
+                  onClick={() => router.push('/login')}
                   className="px-4 py-2 rounded-xl bg-gradient-to-r from-primary to-accent text-white font-semibold hover:shadow-lg transition-all duration-300"
                 >
                   Login to Chat
@@ -350,9 +350,6 @@ export default function ChatbotAssistant() {
           </div>
         </div>
       )}
-
-      {/* Auth Dialog */}
-      <AuthDialog open={showAuthDialog} onOpenChange={setShowAuthDialog} />
 
       <style jsx>{`
         .custom-scrollbar::-webkit-scrollbar {

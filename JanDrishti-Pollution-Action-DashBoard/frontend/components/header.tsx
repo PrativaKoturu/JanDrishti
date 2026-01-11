@@ -1,10 +1,10 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { Building2, User } from "lucide-react"
 import { ModeToggle } from "./mode-toggle"
 import { useAuth } from "@/context/auth-context"
-import AuthDialog from "@/components/auth-dialog"
 import { aqiService, type WardData } from "@/lib/api"
 import {
   DropdownMenu,
@@ -21,9 +21,9 @@ interface HeaderProps {
 }
 
 export default function Header({ selectedWard, setSelectedWard }: HeaderProps) {
+  const router = useRouter()
   const [isScrolled, setIsScrolled] = useState(false)
   const { isAuthenticated, user, logout } = useAuth()
-  const [showAuthDialog, setShowAuthDialog] = useState(false)
   const [wards, setWards] = useState<WardData[]>([])
   const [loadingWards, setLoadingWards] = useState(true)
 
@@ -153,7 +153,7 @@ export default function Header({ selectedWard, setSelectedWard }: HeaderProps) {
               <>
                 {/* Desktop Login Button */}
                 <button
-                  onClick={() => setShowAuthDialog(true)}
+                  onClick={() => router.push('/login')}
                   className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white font-medium text-sm hover:bg-primary/90 transition-colors"
                 >
                   <User size={16} />
@@ -165,9 +165,6 @@ export default function Header({ selectedWard, setSelectedWard }: HeaderProps) {
           </div>
         </div>
       </div>
-
-      {/* Auth Dialog */}
-      <AuthDialog open={showAuthDialog} onOpenChange={setShowAuthDialog} />
     </header>
   )
 }

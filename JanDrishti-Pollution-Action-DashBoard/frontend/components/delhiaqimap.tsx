@@ -400,8 +400,38 @@ const DelhiAQIMap: React.FC = () => {
     }
     
     return () => {
+      // Clean up marker cluster before removing map
+      if (markerClusterRef.current) {
+        try {
+          markerClusterRef.current.clearLayers();
+          if (map.current && map.current.hasLayer(markerClusterRef.current)) {
+            map.current.removeLayer(markerClusterRef.current);
+          }
+        } catch (err) {
+          console.warn('Error cleaning up marker cluster during map cleanup:', err);
+        }
+        markerClusterRef.current = null;
+      }
+      
+      // Clean up ward layer
+      if (wardLayerRef.current && map.current) {
+        try {
+          if (map.current.hasLayer(wardLayerRef.current)) {
+            map.current.removeLayer(wardLayerRef.current);
+          }
+        } catch (err) {
+          console.warn('Error cleaning up ward layer:', err);
+        }
+        wardLayerRef.current = null;
+      }
+      
+      // Remove map last
       if (map.current) {
-        map.current.remove();
+        try {
+          map.current.remove();
+        } catch (err) {
+          console.warn('Error removing map:', err);
+        }
         map.current = null;
       }
     };
@@ -703,8 +733,15 @@ const DelhiAQIMap: React.FC = () => {
   useEffect(() => {
     if (!map.current || !showStations || !leafletLoaded || !leafletRef.current) {
       // Remove existing markers if stations are hidden
-      if (markerClusterRef.current && map.current) {
-        map.current.removeLayer(markerClusterRef.current);
+      if (markerClusterRef.current) {
+        try {
+          markerClusterRef.current.clearLayers();
+          if (map.current && map.current.hasLayer(markerClusterRef.current)) {
+            map.current.removeLayer(markerClusterRef.current);
+          }
+        } catch (cleanupErr) {
+          console.warn('Error removing marker cluster:', cleanupErr);
+        }
         markerClusterRef.current = null;
       }
       return;
@@ -712,17 +749,33 @@ const DelhiAQIMap: React.FC = () => {
 
     if (stations.length === 0) {
       // Remove existing markers if no stations
-      if (markerClusterRef.current && map.current) {
-        map.current.removeLayer(markerClusterRef.current);
+      if (markerClusterRef.current) {
+        try {
+          markerClusterRef.current.clearLayers();
+          if (map.current && map.current.hasLayer(markerClusterRef.current)) {
+            map.current.removeLayer(markerClusterRef.current);
+          }
+        } catch (cleanupErr) {
+          console.warn('Error removing marker cluster:', cleanupErr);
+        }
         markerClusterRef.current = null;
       }
       return;
     }
 
     try {
-      // Remove existing markers
-      if (markerClusterRef.current && map.current) {
-        map.current.removeLayer(markerClusterRef.current);
+      // Remove existing markers - clear all markers first to prevent _leaflet_pos errors
+      if (markerClusterRef.current) {
+        try {
+          // Clear all markers from the cluster before removing
+          markerClusterRef.current.clearLayers();
+          if (map.current && map.current.hasLayer(markerClusterRef.current)) {
+            map.current.removeLayer(markerClusterRef.current);
+          }
+        } catch (cleanupErr) {
+          console.warn('Error cleaning up marker cluster:', cleanupErr);
+        }
+        markerClusterRef.current = null;
       }
 
       const L = leafletRef.current;
@@ -848,12 +901,16 @@ const DelhiAQIMap: React.FC = () => {
 
       return () => {
       try {
-        if (markerClusterRef.current && map.current) {
-          map.current.removeLayer(markerClusterRef.current);
+        if (markerClusterRef.current) {
+          // Clear all markers first to prevent _leaflet_pos errors
+          markerClusterRef.current.clearLayers();
+          if (map.current && map.current.hasLayer(markerClusterRef.current)) {
+            map.current.removeLayer(markerClusterRef.current);
+          }
           markerClusterRef.current = null;
         }
       } catch (err) {
-        console.error('Error cleaning up marker cluster:', err);
+        console.warn('Error cleaning up marker cluster:', err);
       }
     };
   }, [stations, showStations, getAQIColor, getAQICategory, leafletLoaded]);
