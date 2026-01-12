@@ -407,7 +407,7 @@ Use this REAL data to answer the user's question. Do NOT say you don't have acce
                     # Use singleton instance
                     collector = get_collector()
                     all_wards_data = []
-                    for ward in collector.selected_wards[:4]:  # Limit to 4 wards
+                    for ward in collector.selected_wards[:50]:  # Limit to 50 wards
                         ward_data = await fetch_aqi_data_for_ward(None, ward.get("ward_no"))
                         if ward_data:
                             all_wards_data.append(ward_data)
@@ -1707,7 +1707,7 @@ async def get_aqi_bounds(
 # AQI Data Management Endpoints
 @app.get("/api/aqi/wards")
 async def get_selected_wards():
-    """Get the 4 selected wards for AQI monitoring"""
+    """Get all active wards for AQI monitoring (supports up to 50 wards)"""
     try:
         response = supabase.table("selected_wards").select("*").eq("is_active", True).execute()
         return response.data

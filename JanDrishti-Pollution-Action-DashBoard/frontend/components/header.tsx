@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Building2, User, Eye } from "lucide-react"
+import { Building2, User, Eye, ChevronDown, Settings, FileText, LogOut, Search } from "lucide-react"
 import { useAuth } from "@/context/auth-context"
 import { aqiService, type WardData } from "@/lib/api"
 import {
@@ -25,6 +25,8 @@ export default function Header({ selectedWard, setSelectedWard }: HeaderProps) {
   const { isAuthenticated, user, logout } = useAuth()
   const [wards, setWards] = useState<WardData[]>([])
   const [loadingWards, setLoadingWards] = useState(true)
+  const [wardDropdownOpen, setWardDropdownOpen] = useState(false)
+  const [wardSearchQuery, setWardSearchQuery] = useState("")
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20)
@@ -64,8 +66,19 @@ export default function Header({ selectedWard, setSelectedWard }: HeaderProps) {
   const wardOptions = wards.map((ward, index) => ({
     id: `ward-${ward.ward_no}`,
     name: `${ward.ward_name} (${ward.ward_no}) - ${ward.quadrant}`,
-    ward_no: ward.ward_no
+    ward_no: ward.ward_no,
+    ward_name: ward.ward_name,
+    quadrant: ward.quadrant
   }))
+
+  // Filter wards based on search query
+  const filteredWardOptions = wardOptions.filter(ward => 
+    ward.name.toLowerCase().includes(wardSearchQuery.toLowerCase()) ||
+    ward.ward_no.includes(wardSearchQuery)
+  )
+
+  // Get selected ward display name
+  const selectedWardDisplay = wardOptions.find(w => w.id === selectedWard)?.name || "Select Ward"
 
   return (
     <header
@@ -122,34 +135,100 @@ export default function Header({ selectedWard, setSelectedWard }: HeaderProps) {
         </div>
 
         <div className="flex items-center gap-3">
-          {/* Ward Selector */}
-          <div 
-            className="hidden md:flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all hover:scale-105"
-            style={{ 
-              backgroundColor: '#f2ffbd',
-              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.5)'
-            }}
-          >
-            <Building2 size={18} style={{ color: '#44802a' }} />
-            <select
-              value={selectedWard}
-              onChange={(e) => setSelectedWard(e.target.value)}
-              className="bg-transparent text-sm font-semibold text-foreground outline-none cursor-pointer border-none appearance-none pr-6"
-              style={{ 
-                color: '#000',
-                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2344802a' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
-                backgroundRepeat: 'no-repeat',
-                backgroundPosition: 'right center',
-                paddingRight: '24px'
+          {/* Ward Selector Dropdown */}
+          <DropdownMenu open={wardDropdownOpen} onOpenChange={setWardDropdownOpen}>
+            <DropdownMenuTrigger asChild>
+              <button
+                className="hidden md:flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all hover:scale-105"
+                style={{ 
+                  backgroundColor: '#f2ffbd',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.5)'
+                }}
+              >
+                <Building2 size={18} style={{ color: '#44802a' }} />
+                <span className="text-sm font-semibold text-foreground max-w-[200px] truncate" style={{ color: '#000' }}>
+                  {selectedWardDisplay}
+                </span>
+                <ChevronDown 
+                  size={16} 
+                  style={{ color: '#44802a' }}
+                  className={`transition-transform ${wardDropdownOpen ? 'rotate-180' : ''}`}
+                />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent 
+              align="start" 
+              className="w-80 p-0"
+              style={{
+                backgroundColor: '#f2ffbd',
+                border: '2px solid #44802a',
+                boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)',
+                borderRadius: '12px',
+                overflow: 'hidden'
               }}
             >
-              {wardOptions.map((ward) => (
-                <option key={ward.id} value={ward.id}>
-                  {ward.name}
-                </option>
-              ))}
-            </select>
-          </div>
+              {/* Search Input */}
+              <div className="p-3 border-b" style={{ borderColor: '#44802a', borderWidth: '0 0 1px 0' }}>
+                <div className="relative">
+                  <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2" style={{ color: '#44802a' }} />
+                  <input
+                    type="text"
+                    placeholder="Search wards..."
+                    value={wardSearchQuery}
+                    onChange={(e) => setWardSearchQuery(e.target.value)}
+                    className="w-full pl-9 pr-3 py-2 rounded-lg text-sm outline-none"
+                    style={{
+                      backgroundColor: '#ffffff',
+                      border: '1px solid #44802a',
+                      color: '#000'
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                </div>
+              </div>
+              
+              {/* Ward List */}
+              <div className="max-h-[300px] overflow-y-auto">
+                {filteredWardOptions.length > 0 ? (
+                  filteredWardOptions.map((ward) => (
+                    <DropdownMenuItem
+                      key={ward.id}
+                      onClick={() => {
+                        setSelectedWard(ward.id)
+                        setWardDropdownOpen(false)
+                        setWardSearchQuery("")
+                      }}
+                      className="cursor-pointer px-4 py-3 hover:bg-green-500/20 transition-colors"
+                      style={{
+                        backgroundColor: selectedWard === ward.id ? 'rgba(68, 128, 42, 0.15)' : 'transparent'
+                      }}
+                    >
+                      <div className="flex items-center justify-between w-full">
+                        <div className="flex flex-col">
+                          <span className="text-sm font-semibold" style={{ color: '#000' }}>
+                            {ward.ward_name}
+                          </span>
+                          <span className="text-xs" style={{ color: '#44802a' }}>
+                            Ward {ward.ward_no} • {ward.quadrant}
+                          </span>
+                        </div>
+                        {selectedWard === ward.id && (
+                          <div 
+                            className="w-2 h-2 rounded-full"
+                            style={{ backgroundColor: '#44802a' }}
+                          />
+                        )}
+                      </div>
+                    </DropdownMenuItem>
+                  ))
+                ) : (
+                  <div className="px-4 py-8 text-center">
+                    <p className="text-sm" style={{ color: '#6b7280' }}>No wards found</p>
+                  </div>
+                )}
+              </div>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           {/* Action Buttons */}
           <div className="flex items-center gap-2">
@@ -179,26 +258,79 @@ export default function Header({ selectedWard, setSelectedWard }: HeaderProps) {
                     </span> */}
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56 glass-morphism border">
-                  <DropdownMenuLabel>
-                    <div className="flex flex-col">
-                      <span className="font-bold">{user.full_name || "User"}</span>
-                      <span className="text-xs text-muted-foreground">{user.email}</span>
+                <DropdownMenuContent 
+                  align="end" 
+                  className="w-64 p-2"
+                  style={{
+                    backgroundColor: '#f2ffbd',
+                    border: '2px solid #44802a',
+                    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)',
+                    borderRadius: '12px'
+                  }}
+                >
+                  <DropdownMenuLabel className="px-3 py-2">
+                    <div className="flex items-center gap-3">
+                      <div 
+                        className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold"
+                        style={{ 
+                          backgroundColor: '#44802a',
+                          color: '#ffffff',
+                          boxShadow: '0 2px 4px rgba(0, 0, 0, 0.15)'
+                        }}
+                      >
+                        {user.email?.charAt(0).toUpperCase() || "U"}
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="font-bold text-sm" style={{ color: '#000' }}>
+                          {user.full_name || "User"}
+                        </span>
+                        <span className="text-xs" style={{ color: '#44802a' }}>
+                          {user.email}
+                        </span>
+                      </div>
                     </div>
                   </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem className="cursor-pointer hover:bg-muted/50">
-                    Profile Settings
+                  <DropdownMenuSeparator className="my-2" style={{ backgroundColor: '#44802a', opacity: 0.2 }} />
+                  <DropdownMenuItem 
+                    className="cursor-pointer px-3 py-2.5 rounded-lg transition-colors"
+                    style={{ color: '#000' }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = 'rgba(68, 128, 42, 0.15)'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'transparent'
+                    }}
+                  >
+                    <Settings size={16} className="mr-3" style={{ color: '#44802a' }} />
+                    <span>Profile Settings</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem className="cursor-pointer hover:bg-muted/50">
-                    My Reports
+                  <DropdownMenuItem 
+                    className="cursor-pointer px-3 py-2.5 rounded-lg transition-colors"
+                    style={{ color: '#000' }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = 'rgba(68, 128, 42, 0.15)'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'transparent'
+                    }}
+                  >
+                    <FileText size={16} className="mr-3" style={{ color: '#44802a' }} />
+                    <span>My Reports</span>
                   </DropdownMenuItem>
-                  <DropdownMenuSeparator />
+                  <DropdownMenuSeparator className="my-2" style={{ backgroundColor: '#44802a', opacity: 0.2 }} />
                   <DropdownMenuItem
                     onClick={logout}
-                    className="text-red-400 cursor-pointer hover:text-red-300 hover:bg-red-500/10"
+                    className="cursor-pointer px-3 py-2.5 rounded-lg transition-colors"
+                    style={{ color: '#dc2626' }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = 'rgba(220, 38, 38, 0.1)'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'transparent'
+                    }}
                   >
-                    Logout
+                    <LogOut size={16} className="mr-3" />
+                    <span>Logout</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

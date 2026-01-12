@@ -44,8 +44,8 @@ export default function AlertsPanel() {
       // Fetch all wards
       const wards = await aqiService.getWards()
       
-      // Fetch AQI for first 10 wards (to avoid too many API calls)
-      const wardsToCheck = wards.slice(0, 10)
+      // Fetch AQI for first 50 wards (to get comprehensive coverage)
+      const wardsToCheck = wards.slice(0, 50)
       const aqiDataPromises = wardsToCheck.map(async (ward) => {
         try {
           const data = await aqiService.getCurrentAQIForWard(ward.ward_no)

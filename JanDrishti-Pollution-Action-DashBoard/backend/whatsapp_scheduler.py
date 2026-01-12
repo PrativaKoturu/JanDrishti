@@ -124,7 +124,7 @@ class WhatsAppScheduler:
                 else:
                     # Get average AQI for all wards
                     try:
-                        response = self.supabase.table("ward_aqi_daily").select("avg_aqi, avg_pm25, avg_pm10, ward_name").order("date", desc=True).limit(4).execute()
+                        response = self.supabase.table("ward_aqi_daily").select("avg_aqi, avg_pm25, avg_pm10, ward_name").order("date", desc=True).limit(50).execute()
                         if response.data:
                             avg_aqi = sum(d.get("avg_aqi", 0) for d in response.data) / len(response.data)
                             avg_pm25 = sum(d.get("avg_pm25", 0) for d in response.data) / len(response.data)
@@ -207,7 +207,7 @@ class WhatsAppScheduler:
                 else:
                     # Check all wards
                     try:
-                        response = self.supabase.table("ward_aqi_daily").select("avg_aqi, ward_name").order("date", desc=True).limit(4).execute()
+                        response = self.supabase.table("ward_aqi_daily").select("avg_aqi, ward_name").order("date", desc=True).limit(50).execute()
                         if response.data:
                             # Find highest AQI
                             max_aqi = max((d.get("avg_aqi", 0) for d in response.data), default=0)
