@@ -318,10 +318,57 @@ export const aqiService = {
 
   async getWards(): Promise<WardData[]> {
     try {
-      const response = await api.get('/api/aqi/wards')
-      return response.data
-    } catch (error) {
-      console.error('Error fetching wards:', error)
+      // Add nocache parameter to bypass cache during development
+      const response = await api.get('/api/aqi/wards', {
+        params: { _t: Date.now() }, // Cache busting timestamp
+        timeout: 10000 // 10 second timeout
+      })
+      
+      // Response.data should be the parsed JSON array
+      let wardsData = response.data
+      
+      // Handle case where response might be a string that needs parsing
+      if (typeof wardsData === 'string') {
+        try {
+          wardsData = JSON.parse(wardsData)
+        } catch (e) {
+          console.error('Failed to parse response as JSON:', e)
+          throw new Error('Invalid JSON response from server')
+        }
+      }
+      
+      // Ensure we have an array
+      if (!Array.isArray(wardsData)) {
+        console.error('❌ Invalid response format - expected array, got:', typeof wardsData, wardsData)
+        throw new Error('Invalid response format from API - expected array')
+      }
+      
+      console.log(`✅ API Response: Received ${wardsData.length} wards`)
+      if (response.headers['x-wards-count']) {
+        console.log(`📡 Backend reports: ${response.headers['x-wards-count']} wards`)
+      }
+      if (wardsData.length > 0) {
+        console.log(`📋 Sample ward: ${wardsData[0].ward_name} (${wardsData[0].ward_no})`)
+        // Validate ward structure
+        if (!wardsData[0].ward_no || !wardsData[0].ward_name) {
+          console.warn('⚠️ Ward data structure might be invalid:', wardsData[0])
+        }
+      }
+      
+      return wardsData
+    } catch (error: any) {
+      console.error('❌ Error fetching wards:', error)
+      if (error.response) {
+        console.error('Response status:', error.response.status)
+        console.error('Response data:', error.response.data)
+        console.error('Response headers:', error.response.headers)
+      } else if (error.request) {
+        console.error('❌ No response received. Is the backend server running?')
+        console.error('Request URL:', error.config?.url)
+        console.error('Request method:', error.config?.method)
+      } else {
+        console.error('Error setting up request:', error.message)
+      }
       throw error
     }
   },

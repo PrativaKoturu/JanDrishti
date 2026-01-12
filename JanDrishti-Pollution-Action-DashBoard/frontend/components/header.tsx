@@ -39,6 +39,8 @@ export default function Header({ selectedWard, setSelectedWard }: HeaderProps) {
     const fetchWards = async () => {
       try {
         const wardsData = await aqiService.getWards()
+        console.log(`✅ Fetched ${wardsData.length} wards from API`)
+        console.log('Sample wards:', wardsData.slice(0, 5).map(w => `${w.ward_name} (${w.ward_no})`))
         setWards(wardsData)
         
         // Set default ward if not set
@@ -76,6 +78,14 @@ export default function Header({ selectedWard, setSelectedWard }: HeaderProps) {
     ward.name.toLowerCase().includes(wardSearchQuery.toLowerCase()) ||
     ward.ward_no.includes(wardSearchQuery)
   )
+  
+  // Debug: Log ward options count (moved after filteredWardOptions is defined)
+  useEffect(() => {
+    if (wardOptions.length > 0) {
+      console.log(`📋 Total ward options in dropdown: ${wardOptions.length}`)
+      console.log(`📋 Filtered ward options: ${filteredWardOptions.length}`)
+    }
+  }, [wardOptions.length, filteredWardOptions.length])
 
   // Get selected ward display name
   const selectedWardDisplay = wardOptions.find(w => w.id === selectedWard)?.name || "Select Ward"
@@ -185,42 +195,56 @@ export default function Header({ selectedWard, setSelectedWard }: HeaderProps) {
                     onClick={(e) => e.stopPropagation()}
                   />
                 </div>
+                <div className="mt-2 text-xs text-center" style={{ color: '#44802a' }}>
+                  {wardSearchQuery ? (
+                    <span>Showing {filteredWardOptions.length} of {wardOptions.length} wards</span>
+                  ) : (
+                    <span>Total: {wardOptions.length} wards available</span>
+                  )}
+                </div>
               </div>
               
               {/* Ward List */}
-              <div className="max-h-[300px] overflow-y-auto">
+              <div className="overflow-y-auto custom-scrollbar" style={{ maxHeight: '500px' }}>
                 {filteredWardOptions.length > 0 ? (
-                  filteredWardOptions.map((ward) => (
-                    <DropdownMenuItem
-                      key={ward.id}
-                      onClick={() => {
-                        setSelectedWard(ward.id)
-                        setWardDropdownOpen(false)
-                        setWardSearchQuery("")
-                      }}
-                      className="cursor-pointer px-4 py-3 hover:bg-green-500/20 transition-colors"
-                      style={{
-                        backgroundColor: selectedWard === ward.id ? 'rgba(68, 128, 42, 0.15)' : 'transparent'
-                      }}
-                    >
-                      <div className="flex items-center justify-between w-full">
-                        <div className="flex flex-col">
-                          <span className="text-sm font-semibold" style={{ color: '#000' }}>
-                            {ward.ward_name}
-                          </span>
-                          <span className="text-xs" style={{ color: '#44802a' }}>
-                            Ward {ward.ward_no} • {ward.quadrant}
-                          </span>
+                  <>
+                    {filteredWardOptions.map((ward) => (
+                      <DropdownMenuItem
+                        key={ward.id}
+                        onClick={() => {
+                          setSelectedWard(ward.id)
+                          setWardDropdownOpen(false)
+                          setWardSearchQuery("")
+                        }}
+                        className="cursor-pointer px-4 py-3 hover:bg-green-500/20 transition-colors"
+                        style={{
+                          backgroundColor: selectedWard === ward.id ? 'rgba(68, 128, 42, 0.15)' : 'transparent'
+                        }}
+                      >
+                        <div className="flex items-center justify-between w-full">
+                          <div className="flex flex-col">
+                            <span className="text-sm font-semibold" style={{ color: '#000' }}>
+                              {ward.ward_name}
+                            </span>
+                            <span className="text-xs" style={{ color: '#44802a' }}>
+                              Ward {ward.ward_no} • {ward.quadrant}
+                            </span>
+                          </div>
+                          {selectedWard === ward.id && (
+                            <div 
+                              className="w-2 h-2 rounded-full"
+                              style={{ backgroundColor: '#44802a' }}
+                            />
+                          )}
                         </div>
-                        {selectedWard === ward.id && (
-                          <div 
-                            className="w-2 h-2 rounded-full"
-                            style={{ backgroundColor: '#44802a' }}
-                          />
-                        )}
+                      </DropdownMenuItem>
+                    ))}
+                    {!wardSearchQuery && filteredWardOptions.length === wardOptions.length && wardOptions.length >= 50 && (
+                      <div className="px-4 py-2 text-center text-xs border-t" style={{ color: '#44802a', borderColor: 'rgba(68, 128, 42, 0.2)' }}>
+                        <span>All {wardOptions.length} wards displayed. Scroll to see more.</span>
                       </div>
-                    </DropdownMenuItem>
-                  ))
+                    )}
+                  </>
                 ) : (
                   <div className="px-4 py-8 text-center">
                     <p className="text-sm" style={{ color: '#6b7280' }}>No wards found</p>

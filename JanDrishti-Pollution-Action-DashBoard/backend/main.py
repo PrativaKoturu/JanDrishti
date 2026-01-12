@@ -1707,18 +1707,147 @@ async def get_aqi_bounds(
 # AQI Data Management Endpoints
 @app.get("/api/aqi/wards")
 async def get_selected_wards():
-    """Get all active wards for AQI monitoring (supports up to 50 wards)"""
+    """Get 50 selected wards from selected_wards.json, or from Delhi_Wards.geojson if JSON not available"""
     try:
-        response = supabase.table("selected_wards").select("*").eq("is_active", True).execute()
-        return response.data
-    except Exception as e:
-        # Fallback to JSON file
+        # First, try to load from selected_wards.json (prioritize this for 50 wards)
         import json
         json_path = os.path.join(os.path.dirname(__file__), "selected_wards.json")
         if os.path.exists(json_path):
             with open(json_path, 'r') as f:
-                return json.load(f)
-        raise HTTPException(status_code=500, detail=str(e))
+                selected_wards = json.load(f)
+                if selected_wards and len(selected_wards) > 0:
+                    logging.info(f"✅ Returning {len(selected_wards)} wards from selected_wards.json")
+                    # Return list directly - FastAPI will serialize to JSON automatically
+                    # We'll add headers using a custom response
+                    from fastapi.responses import JSONResponse
+                    return JSONResponse(
+                        content=selected_wards,
+                        headers={
+                            "X-Wards-Count": str(len(selected_wards)),
+                            "X-Wards-Source": "selected_wards.json",
+                            "Access-Control-Expose-Headers": "X-Wards-Count,X-Wards-Source"
+                        }
+                    )
+        
+        # Fallback to GeoJSON file (limit to 50 wards)
+        wards_path = os.path.join(os.path.dirname(__file__), "Delhi_Wards.geojson")
+        if not os.path.exists(wards_path):
+            wards_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "Delhi_Wards.geojson"))
+        
+        if os.path.exists(wards_path):
+            wards_gdf = gpd.read_file(wards_path)
+            logging.info(f"Loaded {len(wards_gdf)} wards from GeoJSON file")
+            
+            # Detect ward columns
+            ward_cols = ["Ward_Name", "Ward_No", "Ward", "name", "NAME"]
+            WARD_COL = next((c for c in ward_cols if c in wards_gdf.columns), None)
+            ward_no_col = next((c for c in ["Ward_No", "ward_no", "WARD_NO"] if c in wards_gdf.columns), None)
+            
+            if WARD_COL is None or ward_no_col is None:
+                logging.warning(f"Could not detect ward columns. Found columns: {wards_gdf.columns.tolist()}")
+                # Fallback to selected_wards if GeoJSON structure is unexpected
+                response = supabase.table("selected_wards").select("*").eq("is_active", True).execute()
+                return response.data if response.data else []
+            
+            # Calculate centroids for quadrant classification
+            try:
+                wards_projected = wards_gdf.to_crs(epsg=32643)
+                centroids_projected = wards_projected.geometry.centroid
+                centroids_wgs84 = centroids_projected.to_crs(epsg=4326)
+                wards_gdf['cent_lon'] = centroids_wgs84.x
+                wards_gdf['cent_lat'] = centroids_wgs84.y
+            except Exception as proj_error:
+                logging.warning(f"Projection failed, using direct centroid: {proj_error}")
+                # If projection fails, use geometry centroid directly
+                try:
+                    wards_gdf['cent_lon'] = wards_gdf.geometry.centroid.x
+                    wards_gdf['cent_lat'] = wards_gdf.geometry.centroid.y
+                except Exception as centroid_error:
+                    logging.error(f"Centroid calculation failed: {centroid_error}")
+                    # Use default coordinates if centroid calculation fails
+                    wards_gdf['cent_lon'] = 77.2090
+                    wards_gdf['cent_lat'] = 28.6139
+            
+            # Calculate center for quadrant classification
+            bounds = wards_gdf.total_bounds
+            center_lon = (bounds[0] + bounds[2]) / 2
+            center_lat = (bounds[1] + bounds[3]) / 2
+            
+            # Classify quadrants
+            def classify_quadrant(lon, lat):
+                if pd.isna(lon) or pd.isna(lat):
+                    return "NE"  # Default quadrant
+                if lat >= center_lat and lon >= center_lon:
+                    return "NE"
+                elif lat >= center_lat and lon < center_lon:
+                    return "NW"
+                elif lat < center_lat and lon >= center_lon:
+                    return "SE"
+                else:
+                    return "SW"
+            
+            wards_gdf['quadrant'] = wards_gdf.apply(
+                lambda row: classify_quadrant(row.get('cent_lon', 77.2090), row.get('cent_lat', 28.6139)), axis=1
+            )
+            
+            # Convert to list of dictionaries (return all wards, sorted by ward number)
+            all_wards = []
+            for idx, row in wards_gdf.iterrows():
+                try:
+                    ward_no = str(row[ward_no_col]) if pd.notna(row[ward_no_col]) else f"WARD_{idx}"
+                    ward_name = str(row[WARD_COL]) if pd.notna(row[WARD_COL]) else f"Ward {ward_no}"
+                    
+                    # Extract numeric part of ward_no for sorting (handle cases like "CANT_1", "72", etc.)
+                    try:
+                        ward_no_numeric = int(''.join(filter(str.isdigit, ward_no)) or '0')
+                    except:
+                        ward_no_numeric = idx
+                    
+                    ward_data = {
+                        "ward_name": ward_name.strip(),
+                        "ward_no": ward_no.strip(),
+                        "quadrant": str(row.get('quadrant', 'NE')),
+                        "latitude": float(row['cent_lat']) if pd.notna(row['cent_lat']) else 28.6139,
+                        "longitude": float(row['cent_lon']) if pd.notna(row['cent_lon']) else 77.2090,
+                        "_sort_key": ward_no_numeric  # For sorting
+                    }
+                    all_wards.append(ward_data)
+                except Exception as ward_error:
+                    logging.warning(f"Error processing ward at index {idx}: {ward_error}")
+                    continue
+            
+            # Sort by ward number (numeric)
+            all_wards.sort(key=lambda x: x.get('_sort_key', 0))
+            
+            # Remove sort key before returning
+            for ward in all_wards:
+                ward.pop('_sort_key', None)
+            
+            # Limit to 50 wards if more than 50
+            if len(all_wards) > 50:
+                all_wards = all_wards[:50]
+                logging.info(f"Limited to 50 wards from GeoJSON (total available: {len(wards_gdf)})")
+            
+            logging.info(f"Returning {len(all_wards)} wards from GeoJSON")
+            return all_wards
+        
+        # Fallback to selected_wards table
+        logging.warning("GeoJSON file not found, falling back to selected_wards table")
+        response = supabase.table("selected_wards").select("*").eq("is_active", True).execute()
+        return response.data if response.data else []
+    except Exception as e:
+        logging.error(f"Error fetching wards: {e}")
+        import traceback
+        logging.error(traceback.format_exc())
+        # Final fallback to JSON file
+        import json
+        json_path = os.path.join(os.path.dirname(__file__), "selected_wards.json")
+        if os.path.exists(json_path):
+            with open(json_path, 'r') as f:
+                wards = json.load(f)
+                logging.info(f"Fallback: Returning {len(wards)} wards from selected_wards.json")
+                return wards
+        raise HTTPException(status_code=500, detail=f"Failed to load wards: {str(e)}")
 
 @app.get("/api/aqi/daily")
 async def get_daily_aqi_data(

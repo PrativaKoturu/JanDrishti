@@ -1,24 +1,213 @@
 [
   {
-    "ward_name": "MODEL TOWN",
-    "ward_no": "72",
-    "latitude": 28.701932831461676,
-    "longitude": 77.19134098824655,
+    "ward_name": "DELHI CANTT CHARGE 1",
+    "ward_no": "CANT_1",
+    "latitude": 28.621414712193754,
+    "longitude": 77.1317999149335,
+    "quadrant": "SE"
+  },
+  {
+    "ward_name": "DELHI CANTT CHARGE 2",
+    "ward_no": "CANT_2",
+    "latitude": 28.6105876130698,
+    "longitude": 77.14289509785438,
+    "quadrant": "SE"
+  },
+  {
+    "ward_name": "DELHI CANTT CHARGE 4",
+    "ward_no": "CANT_4",
+    "latitude": 28.56316663596547,
+    "longitude": 77.14555700616982,
+    "quadrant": "SE"
+  },
+  {
+    "ward_name": "DELHI CANTT CHARGE 5",
+    "ward_no": "CANT_5",
+    "latitude": 28.576557733350427,
+    "longitude": 77.13216009543945,
+    "quadrant": "SE"
+  },
+  {
+    "ward_name": "DELHI CANTT CHARGE 6",
+    "ward_no": "CANT_6",
+    "latitude": 28.57026753438448,
+    "longitude": 77.10750949025035,
+    "quadrant": "SE"
+  },
+  {
+    "ward_name": "DELHI CANTT CHARGE 7",
+    "ward_no": "CANT_7",
+    "latitude": 28.595160429369397,
+    "longitude": 77.11007328756018,
+    "quadrant": "SE"
+  },
+  {
+    "ward_name": "DELHI CANTT CHARGE 8",
+    "ward_no": "CANT_8",
+    "latitude": 28.60038567360109,
+    "longitude": 77.12558870600718,
+    "quadrant": "SE"
+  },
+  {
+    "ward_name": "DELHI CANTT CHARGE 3",
+    "ward_no": "CANT_3",
+    "latitude": 28.593395980616606,
+    "longitude": 77.14622187317931,
+    "quadrant": "SE"
+  },
+  {
+    "ward_name": "NDMC CHARGE 1",
+    "ward_no": "NDMC_1",
+    "latitude": 28.62097027288833,
+    "longitude": 77.23197569016465,
+    "quadrant": "SE"
+  },
+  {
+    "ward_name": "NDMC CHARGE 2",
+    "ward_no": "NDMC_2",
+    "latitude": 28.635958386650994,
+    "longitude": 77.21252841265873,
+    "quadrant": "SE"
+  },
+  {
+    "ward_name": "NDMC CHARGE 3",
+    "ward_no": "NDMC_3",
+    "latitude": 28.61907054926095,
+    "longitude": 77.18898973424389,
+    "quadrant": "SE"
+  },
+  {
+    "ward_name": "NDMC CHARGE 4",
+    "ward_no": "NDMC_4",
+    "latitude": 28.620380716896403,
+    "longitude": 77.21411908566543,
+    "quadrant": "SE"
+  },
+  {
+    "ward_name": "NDMC CHARGE 5",
+    "ward_no": "NDMC_5",
+    "latitude": 28.601969608125838,
+    "longitude": 77.22035911936223,
+    "quadrant": "SE"
+  },
+  {
+    "ward_name": "NDMC CHARGE 7",
+    "ward_no": "NDMC_7",
+    "latitude": 28.570640696427425,
+    "longitude": 77.20543318321259,
+    "quadrant": "SE"
+  },
+  {
+    "ward_name": "NDMC CHARGE 8",
+    "ward_no": "NDMC_8",
+    "latitude": 28.577015283892813,
+    "longitude": 77.19598169727621,
+    "quadrant": "SE"
+  },
+  {
+    "ward_name": "NDMC CHARGE 9",
+    "ward_no": "NDMC_9",
+    "latitude": 28.590083522566726,
+    "longitude": 77.18999586554641,
+    "quadrant": "SE"
+  },
+  {
+    "ward_name": "NDMC CHARGE 6",
+    "ward_no": "NDMC_6",
+    "latitude": 28.584645474159537,
+    "longitude": 77.21854960256678,
+    "quadrant": "SE"
+  },
+  {
+    "ward_name": "CHANDNI CHOWK",
+    "ward_no": "80",
+    "latitude": 28.65712304686243,
+    "longitude": 77.23445544666876,
     "quadrant": "NE"
   },
   {
-    "ward_name": "BEGUMPUR",
-    "ward_no": "27",
-    "latitude": 28.76512833850312,
-    "longitude": 77.02254192019423,
-    "quadrant": "NW"
+    "ward_name": "MINTO ROAD",
+    "ward_no": "81",
+    "latitude": 28.636862771205454,
+    "longitude": 77.23194745739796,
+    "quadrant": "SE"
   },
   {
-    "ward_name": "HAUZ RANI",
-    "ward_no": "162",
-    "latitude": 28.53324577226953,
-    "longitude": 77.21275944388348,
+    "ward_name": "KUCHA PANDIT",
+    "ward_no": "82",
+    "latitude": 28.647548235071437,
+    "longitude": 77.22588515767656,
+    "quadrant": "NE"
+  },
+  {
+    "ward_name": "BAZAR SITARAM",
+    "ward_no": "83",
+    "latitude": 28.64697899410235,
+    "longitude": 77.23098240308552,
+    "quadrant": "NE"
+  },
+  {
+    "ward_name": "IDGAH ROAD",
+    "ward_no": "85",
+    "latitude": 28.653422405856944,
+    "longitude": 77.21716725622287,
+    "quadrant": "NE"
+  },
+  {
+    "ward_name": "KHYALA",
+    "ward_no": "108",
+    "latitude": 28.653618630554863,
+    "longitude": 77.10345551975365,
+    "quadrant": "NE"
+  },
+  {
+    "ward_name": "JANAK PURI NORTH",
+    "ward_no": "109",
+    "latitude": 28.62871298217233,
+    "longitude": 77.09652725217168,
     "quadrant": "SE"
+  },
+  {
+    "ward_name": "MUKHERJEE NAGAR",
+    "ward_no": "11",
+    "latitude": 28.712973866428484,
+    "longitude": 77.21661167383388,
+    "quadrant": "NE"
+  },
+  {
+    "ward_name": "JANAK PURI WEST",
+    "ward_no": "117",
+    "latitude": 28.622755283134993,
+    "longitude": 77.07959655339828,
+    "quadrant": "SW"
+  },
+  {
+    "ward_name": "JANAK PURI SOUTH",
+    "ward_no": "118",
+    "latitude": 28.61677906922798,
+    "longitude": 77.09693995723785,
+    "quadrant": "SE"
+  },
+  {
+    "ward_name": "MILAP NAGAR",
+    "ward_no": "119",
+    "latitude": 28.619530275995935,
+    "longitude": 77.0625191729476,
+    "quadrant": "SW"
+  },
+  {
+    "ward_name": "SITA PURI",
+    "ward_no": "120",
+    "latitude": 28.611064973771846,
+    "longitude": 77.07853718427083,
+    "quadrant": "SW"
+  },
+  {
+    "ward_name": "CHHAWLA",
+    "ward_no": "133",
+    "latitude": 28.539576891947945,
+    "longitude": 76.94998051807295,
+    "quadrant": "SW"
   },
   {
     "ward_name": "NANGLI SAKRAVATI",
@@ -26,5 +215,138 @@
     "latitude": 28.580400517761042,
     "longitude": 76.99407282729521,
     "quadrant": "SW"
+  },
+  {
+    "ward_name": "KAKRAULA",
+    "ward_no": "135",
+    "latitude": 28.59905532993424,
+    "longitude": 77.02743468389704,
+    "quadrant": "SW"
+  },
+  {
+    "ward_name": "KHERA",
+    "ward_no": "140",
+    "latitude": 28.586099235973137,
+    "longitude": 76.90241714063143,
+    "quadrant": "SW"
+  },
+  {
+    "ward_name": "DILSHAD GARDEN",
+    "ward_no": "241",
+    "latitude": 28.68495017974688,
+    "longitude": 77.30906247748865,
+    "quadrant": "NE"
+  },
+  {
+    "ward_name": "NEW SEEMA PURI",
+    "ward_no": "242",
+    "latitude": 28.688393822124553,
+    "longitude": 77.32427839622115,
+    "quadrant": "NE"
+  },
+  {
+    "ward_name": "NAND NAGRI",
+    "ward_no": "243",
+    "latitude": 28.694481393058187,
+    "longitude": 77.30628534528323,
+    "quadrant": "NE"
+  },
+  {
+    "ward_name": "SUNDER NAGARI",
+    "ward_no": "244",
+    "latitude": 28.695209343692962,
+    "longitude": 77.31733095551542,
+    "quadrant": "NE"
+  },
+  {
+    "ward_name": "DURGA PURI",
+    "ward_no": "245",
+    "latitude": 28.688242287297577,
+    "longitude": 77.29826917766891,
+    "quadrant": "NE"
+  },
+  {
+    "ward_name": "ASHOK NAGAR",
+    "ward_no": "246",
+    "latitude": 28.69583999243382,
+    "longitude": 77.29640250418701,
+    "quadrant": "NE"
+  },
+  {
+    "ward_name": "RAM NAGAR",
+    "ward_no": "247",
+    "latitude": 28.677744637175532,
+    "longitude": 77.29243269860127,
+    "quadrant": "NE"
+  },
+  {
+    "ward_name": "WELCOME COLONY",
+    "ward_no": "248",
+    "latitude": 28.677559067578837,
+    "longitude": 77.28012230396337,
+    "quadrant": "NE"
+  },
+  {
+    "ward_name": "CHAUHAN BANGER",
+    "ward_no": "249",
+    "latitude": 28.681411434223335,
+    "longitude": 77.27085755269422,
+    "quadrant": "NE"
+  },
+  {
+    "ward_name": "ZAFFRABAD",
+    "ward_no": "250",
+    "latitude": 28.67453472786565,
+    "longitude": 77.26666538723579,
+    "quadrant": "NE"
+  },
+  {
+    "ward_name": "MAUJPUR",
+    "ward_no": "252",
+    "latitude": 28.68957251588667,
+    "longitude": 77.27492203991883,
+    "quadrant": "NE"
+  },
+  {
+    "ward_name": "GHONDA",
+    "ward_no": "255",
+    "latitude": 28.69015301860118,
+    "longitude": 77.26575757858248,
+    "quadrant": "NE"
+  },
+  {
+    "ward_name": "YAMUNA VIHAR",
+    "ward_no": "256",
+    "latitude": 28.700135360076786,
+    "longitude": 77.27144688164093,
+    "quadrant": "NE"
+  },
+  {
+    "ward_name": "SUBHASH MOHALLA",
+    "ward_no": "257",
+    "latitude": 28.695447888218997,
+    "longitude": 77.27212240829711,
+    "quadrant": "NE"
+  },
+  {
+    "ward_name": "KARDAM PURI",
+    "ward_no": "258",
+    "latitude": 28.694375895723322,
+    "longitude": 77.28671479203635,
+    "quadrant": "NE"
+  },
+  {
+    "ward_name": "JANTA COLONY",
+    "ward_no": "259",
+    "latitude": 28.68353058286586,
+    "longitude": 77.27937153863694,
+    "quadrant": "NE"
+  },
+  {
+    "ward_name": "BABAR PUR",
+    "ward_no": "260",
+    "latitude": 28.686718618811877,
+    "longitude": 77.2855773006735,
+    "quadrant": "NE"
   }
 ]

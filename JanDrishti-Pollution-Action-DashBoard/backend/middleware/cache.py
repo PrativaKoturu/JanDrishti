@@ -3,6 +3,7 @@ Response caching middleware for AQI endpoints
 Uses Redis to cache responses and reduce external API calls
 """
 from fastapi import Request
+from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import Response
 import json
@@ -17,13 +18,17 @@ CACHE_TTL = {
     "/api/aqi/feed/": 300,  # 5 minutes for feed data
     "/api/aqi/hourly/": 60,  # 1 minute for hourly data
     "/api/aqi/daily": 3600,  # 1 hour for daily data
-    "/api/aqi/wards": 3600,  # 1 hour for wards list
+    "/api/aqi/wards": 60,  # 1 minute for wards list (reduced for faster updates)
 }
 
 class CacheMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         # Only cache GET requests
         if request.method != "GET":
+            return await call_next(request)
+        
+        # Allow cache bypass with ?nocache=true query parameter
+        if request.url.query and "nocache=true" in request.url.query:
             return await call_next(request)
         
         # Check if this endpoint should be cached
