@@ -126,7 +126,7 @@ export default function PollutantHealth({ selectedWard }: PollutantHealthProps) 
 
   if (loading) {
     return (
-      <div className="rounded-3xl border border-border/40 backdrop-blur-xl glass-effect overflow-hidden p-8">
+      <div className="rounded-3xl overflow-hidden p-8" style={{ backgroundColor: '#deffbd', border: '3px solid #1e3a8a' }}>
         <div className="flex items-center justify-center h-64">
           <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
         </div>
@@ -136,7 +136,7 @@ export default function PollutantHealth({ selectedWard }: PollutantHealthProps) 
 
   if (!healthData) {
     return (
-      <div className="rounded-3xl border border-border/40 backdrop-blur-xl glass-effect overflow-hidden p-8">
+      <div className="rounded-3xl overflow-hidden p-8" style={{ backgroundColor: '#deffbd', border: '3px solid #1e3a8a' }}>
         <div className="text-center text-muted-foreground">
           <p>No health data available</p>
         </div>
@@ -147,7 +147,7 @@ export default function PollutantHealth({ selectedWard }: PollutantHealthProps) 
   const advice = getHealthAdvice(healthData.aqi, healthData.status)
 
   return (
-    <div className="rounded-3xl border border-border/40 backdrop-blur-xl glass-effect overflow-hidden group hover:border-primary/40 transition-all duration-500 p-8">
+    <div className="rounded-3xl overflow-hidden group transition-all duration-500 p-8" style={{ backgroundColor: '#deffbd' }}>
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center border border-primary/20">
@@ -195,7 +195,8 @@ export default function PollutantHealth({ selectedWard }: PollutantHealthProps) 
           return (
             <div
               key={pollutant.label}
-              className="flex items-center justify-between p-4 rounded-xl glass-effect border border-border/30 hover:border-primary/40 transition-all"
+              className="flex items-center justify-between p-4 rounded-xl transition-all"
+              style={{ backgroundColor: '#deffbd', border: '2px solid #1e3a8a' }}
             >
               <div>
                 <p className="text-sm font-semibold text-foreground">{pollutant.label}</p>

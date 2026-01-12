@@ -79,7 +79,7 @@ export default function AQIReference({ selectedWard }: AQIReferenceProps) {
   }
 
   return (
-    <div className="rounded-3xl border border-border/40 backdrop-blur-xl glass-effect overflow-hidden group hover:border-primary/40 transition-all duration-500 p-8">
+    <div className="rounded-3xl overflow-hidden group transition-all duration-500 p-8" style={{ backgroundColor: '#deffbd' }}>
       <div className="flex items-center gap-4 mb-8">
         <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center border border-primary/20">
           <BarChart3 className="w-6 h-6 text-primary" />
@@ -97,11 +97,8 @@ export default function AQIReference({ selectedWard }: AQIReferenceProps) {
           return (
             <div
               key={index}
-              className={`flex items-center justify-between p-5 rounded-2xl glass-effect transition-all duration-300 group/cat cursor-pointer border ${
-                isCurrent 
-                  ? `${category.border} ${category.bg}` 
-                  : "border-border/30 hover:border-border/50"
-              } hover:scale-[1.02]`}
+              className={`flex items-center justify-between p-5 rounded-2xl transition-all duration-300 group/cat cursor-pointer hover:scale-[1.02]`}
+              style={{ backgroundColor: '#deffbd', border: '2px solid #1e3a8a' }}
             >
               <div className="flex items-center gap-4 flex-1">
                 <div

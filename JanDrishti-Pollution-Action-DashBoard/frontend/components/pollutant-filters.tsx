@@ -18,14 +18,14 @@ interface PollutantFiltersProps {
 export default function PollutantFilters({ pollutants, selectedPollutant, onSelectPollutant }: PollutantFiltersProps) {
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between" suppressHydrationWarning>
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20">
             <Search size={20} className="text-primary" />
           </div>
           <div>
             <h3 className="text-xl font-bold">Parameter Focus</h3>
-            <p className="text-sm text-muted-foreground">Isolate specific pollutants for detailed spatial analysis</p>
+           
           </div>
         </div>
         <button className="hidden sm:flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors">
@@ -34,7 +34,7 @@ export default function PollutantFilters({ pollutants, selectedPollutant, onSele
         </button>
       </div>
       
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-wrap gap-3" suppressHydrationWarning>
         {pollutants.map((pollutant) => (
           <button
             key={pollutant.id}

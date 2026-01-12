@@ -117,7 +117,7 @@ export default function PollutionChart({ selectedPollutant, selectedWard }: Poll
   const selectedKey = selectedPollutant as keyof typeof chartConfig
 
   return (
-    <div className="rounded-3xl border border-border/40 backdrop-blur-xl glass-effect overflow-hidden group hover:border-primary/40 transition-all duration-500 p-8">
+    <div className="rounded-3xl border border-border/40 overflow-hidden group hover:border-primary/40 transition-all duration-500 p-8" style={{ backgroundColor: '#deffbd' }}>
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center border border-primary/20">
@@ -133,7 +133,7 @@ export default function PollutionChart({ selectedPollutant, selectedWard }: Poll
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <div className="px-4 py-2 rounded-xl glass-effect border border-border/30 text-sm font-semibold text-foreground">
+          <div className="px-4 py-2 rounded-xl border border-border/30 text-sm font-semibold text-foreground" style={{ backgroundColor: '#deffbd' }}>
             {data.length > 0 ? `Last ${data.length} hours` : "No data"}
           </div>
           <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary/20 border border-primary/30">
@@ -176,17 +176,17 @@ export default function PollutionChart({ selectedPollutant, selectedWard }: Poll
           <div className="h-96 opacity-90 group-hover:opacity-100 transition-opacity rounded-2xl overflow-hidden">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.1)" />
                 <XAxis 
                   dataKey="time" 
-                  stroke="rgba(255,255,255,0.6)" 
+                  stroke="#000000" 
                   style={{ fontSize: "12px", fontWeight: "500" }}
-                  tick={{ fill: "rgba(255,255,255,0.6)" }}
+                  tick={{ fill: "#000000" }}
                 />
                 <YAxis 
-                  stroke="rgba(255,255,255,0.6)" 
+                  stroke="#000000" 
                   style={{ fontSize: "12px", fontWeight: "500" }}
-                  tick={{ fill: "rgba(255,255,255,0.6)" }}
+                  tick={{ fill: "#000000" }}
                 />
                 <Tooltip
                   contentStyle={{

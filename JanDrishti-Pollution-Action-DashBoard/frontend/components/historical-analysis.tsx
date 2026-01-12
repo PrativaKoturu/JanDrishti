@@ -445,14 +445,14 @@ export default function HistoricalAnalysis({ selectedPollutant }: HistoricalAnal
           {/* Statistical Summary */}
           {stats && (
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="rounded-3xl border border-border/40 glass-effect p-6">
+        <div className="rounded-3xl border border-border/40 p-6" style={{ backgroundColor: '#deffbd' }}>
           <h3 className="text-xl font-bold text-foreground mb-6 flex items-center gap-3">
             <BarChart3 className="w-6 h-6 text-primary" />
             Statistical Summary
           </h3>
           
           <div className="space-y-4">
-            <div className="flex items-center justify-between p-4 rounded-xl glass-effect border border-border/30">
+            <div className="flex items-center justify-between p-4 rounded-xl border border-border/30" style={{ backgroundColor: '#deffbd' }}>
               <div>
                 <p className="text-sm text-muted-foreground">Average AQI</p>
                       <p className="text-2xl font-bold text-foreground">{stats.avgAqi}</p>
@@ -469,7 +469,7 @@ export default function HistoricalAnalysis({ selectedPollutant }: HistoricalAnal
               </div>
             </div>
 
-            <div className="flex items-center justify-between p-4 rounded-xl glass-effect border border-border/30">
+            <div className="flex items-center justify-between p-4 rounded-xl border border-border/30" style={{ backgroundColor: '#deffbd' }}>
               <div>
                 <p className="text-sm text-muted-foreground">Peak Value</p>
                       <p className="text-2xl font-bold text-foreground">{stats.maxAqi}</p>
@@ -480,7 +480,7 @@ export default function HistoricalAnalysis({ selectedPollutant }: HistoricalAnal
               </div>
             </div>
 
-            <div className="flex items-center justify-between p-4 rounded-xl glass-effect border border-border/30">
+            <div className="flex items-center justify-between p-4 rounded-xl border border-border/30" style={{ backgroundColor: '#deffbd' }}>
               <div>
                 <p className="text-sm text-muted-foreground">Best Value</p>
                       <p className="text-2xl font-bold text-foreground">{stats.minAqi}</p>
@@ -493,14 +493,14 @@ export default function HistoricalAnalysis({ selectedPollutant }: HistoricalAnal
           </div>
         </div>
 
-        <div className="rounded-3xl border border-border/40 glass-effect p-6">
+        <div className="rounded-3xl border border-border/40 p-6" style={{ backgroundColor: '#deffbd' }}>
           <h3 className="text-xl font-bold text-foreground mb-6 flex items-center gap-3">
                   <Info className="w-6 h-6 text-primary" />
                   Data Information
           </h3>
 
           <div className="space-y-4">
-            <div className="p-4 rounded-xl glass-effect border border-border/30">
+            <div className="p-4 rounded-xl border border-border/30" style={{ backgroundColor: '#deffbd' }}>
               <div className="flex items-center gap-2 mb-2">
                       <span className="text-blue-400">📅</span>
                       <p className="font-semibold text-foreground text-sm">Data Collection</p>
@@ -510,7 +510,7 @@ export default function HistoricalAnalysis({ selectedPollutant }: HistoricalAnal
                     </p>
             </div>
 
-            <div className="p-4 rounded-xl glass-effect border border-border/30">
+            <div className="p-4 rounded-xl border border-border/30" style={{ backgroundColor: '#deffbd' }}>
               <div className="flex items-center gap-2 mb-2">
                       <span className="text-green-400">✓</span>
                       <p className="font-semibold text-foreground text-sm">Data Points</p>
@@ -521,7 +521,7 @@ export default function HistoricalAnalysis({ selectedPollutant }: HistoricalAnal
             </div>
 
                   {dailyData.length > 0 && (
-            <div className="p-4 rounded-xl glass-effect border border-border/30">
+            <div className="p-4 rounded-xl border border-border/30" style={{ backgroundColor: '#deffbd' }}>
               <div className="flex items-center gap-2 mb-2">
                         <BarChart3 className="w-5 h-5 text-primary" />
                         <p className="font-semibold text-foreground text-sm">Coverage</p>

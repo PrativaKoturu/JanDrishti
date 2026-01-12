@@ -261,9 +261,12 @@ export default function AlertsPanel() {
                 transition={{ delay: i * 0.1 }}
                 className={`p-5 rounded-[1.5rem] border transition-all duration-300 group cursor-pointer ${
                   alert.isRead 
-                    ? "bg-white/5 border-white/5 hover:border-white/10" 
-                    : "bg-primary/5 border-primary/20 shadow-[0_0_20px_rgba(56,189,248,0.05)]"
+                    ? "border-white/5 hover:border-white/10" 
+                    : "border-white/5 hover:border-white/10"
                 }`}
+                style={{ 
+                  backgroundColor: '#deffbd'
+                }}
               >
                 <div className="flex items-start gap-4">
                   <div className={`p-2.5 rounded-xl ${getPriorityStyles(alert.priority)}`}>

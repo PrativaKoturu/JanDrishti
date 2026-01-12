@@ -70,23 +70,18 @@ export default function Header({ selectedWard, setSelectedWard }: HeaderProps) {
 
   return (
     <header
-      className={`sticky top-0 z-50 bg-background border-b border-border/50 shadow-sm transition-all h-[73px] flex items-center ${isScrolled
+      className={`sticky top-0 z-50 border-b border-border/50 shadow-sm transition-all h-[73px] flex items-center ${isScrolled
         ? "shadow-md"
         : ""
         }`}
+      style={{ backgroundColor: '#44802a' }}
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
         <div className="flex items-center gap-12">
           {/* Logo */}
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center text-white font-semibold text-lg">
-              J
-            </div>
-            <div>
-              <div className="text-lg font-semibold text-foreground">
-                JanDrishti
-              </div>
-              <div className="text-xs text-muted-foreground">Environmental Intelligence</div>
+            <div className="text-lg font-semibold text-foreground">
+              JanDrishti
             </div>
           </div>
 
@@ -94,12 +89,18 @@ export default function Header({ selectedWard, setSelectedWard }: HeaderProps) {
 
         <div className="flex items-center gap-4">
           {/* Ward Selector */}
-          <div className="hidden md:flex items-center gap-2 px-3 py-2 rounded-lg border border-border/50 bg-muted/30 hover:bg-muted/50 transition-colors">
+          <div className="hidden md:flex items-center gap-2 px-3 py-2 rounded-lg border border-border/50 transition-colors" style={{ backgroundColor: '#d7d98a' }}>
             <Building2 size={16} className="text-muted-foreground" />
             <select
               value={selectedWard}
               onChange={(e) => setSelectedWard(e.target.value)}
-              className="bg-transparent text-sm font-medium text-foreground outline-none cursor-pointer border-none appearance-none"
+              className="bg-transparent text-sm font-medium text-foreground outline-none cursor-pointer border-none appearance-none pr-6"
+              style={{ 
+                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23000000' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
+                backgroundRepeat: 'no-repeat',
+                backgroundPosition: 'right center',
+                paddingRight: '24px'
+              }}
             >
               {wardOptions.map((ward) => (
                 <option key={ward.id} value={ward.id}>
@@ -117,8 +118,8 @@ export default function Header({ selectedWard, setSelectedWard }: HeaderProps) {
             {isAuthenticated && user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="flex items-center gap-2 px-3 py-2 rounded-lg border border-border/50 bg-muted/30 hover:bg-muted/50 transition-colors">
-                    <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-sm font-medium">
+                  <button className="flex items-center gap-2 px-3 py-2 rounded-lg border border-border/50 transition-colors" style={{ backgroundColor: '#d7d98a' }}>
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium" style={{ backgroundColor: '#d7d98a', color: '#000' }}>
                       {user.email?.charAt(0).toUpperCase() || "U"}
                     </div>
                     {/* <span className="text-sm font-bold text-foreground hidden sm:inline">
@@ -154,7 +155,8 @@ export default function Header({ selectedWard, setSelectedWard }: HeaderProps) {
                 {/* Desktop Login Button */}
                 <button
                   onClick={() => router.push('/login')}
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white font-medium text-sm hover:bg-primary/90 transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-colors"
+                  style={{ backgroundColor: '#d7d98a', color: '#000' }}
                 >
                   <User size={16} />
                   <span className="hidden sm:inline">Login</span>

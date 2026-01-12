@@ -66,7 +66,7 @@ export default function NewsSection() {
   }
 
   return (
-    <div className="rounded-3xl border border-border/40 backdrop-blur-xl glass-effect p-8 space-y-6 h-[550px] flex flex-col hover:border-border/60 transition-all duration-500 group">
+    <div className="rounded-3xl border border-border/40 p-8 space-y-6 h-[550px] flex flex-col hover:border-border/60 transition-all duration-500 group" style={{ backgroundColor: '#deffbd' }}>
       <div className="flex items-center justify-between pb-6 border-b border-border/30">
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center border border-primary/20">

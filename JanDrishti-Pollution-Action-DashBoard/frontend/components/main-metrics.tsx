@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { Wind, Gauge, AlertCircle, MapPin, Share2, BarChart3, Lightbulb, AlertTriangle, Loader2 } from "lucide-react"
+import { Wind, Gauge, AlertCircle, MapPin, BarChart3, Lightbulb, AlertTriangle, Loader2 } from "lucide-react"
 import { aqiService, type WardData } from "@/lib/api"
 
 interface AQIData {
@@ -177,7 +177,7 @@ export default function MainMetrics({ selectedWard }: MainMetricsProps) {
       {/* Background Glow */}
       <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 to-accent/20 rounded-[2rem] blur-xl opacity-50 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
       
-      <div className="relative rounded-[2rem] glass-morphism border border-white/5 p-8 md:p-10 overflow-hidden">
+      <div className="relative rounded-[2rem] border border-white/5 p-8 md:p-10 overflow-hidden backdrop-blur-md" style={{ backgroundColor: 'rgba(222, 248, 207, 0.6)' }}>
         {/* Decorative Elements */}
         <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-[80px] -mr-32 -mt-32" />
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-accent/5 rounded-full blur-[80px] -ml-32 -mb-32" />
@@ -282,14 +282,6 @@ export default function MainMetrics({ selectedWard }: MainMetricsProps) {
                 </div>
               </div>
 
-              {/* <div className="flex gap-4">
-                <button className="p-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors text-muted-foreground hover:text-foreground">
-                  <Share2 size={20} />
-                </button>
-                <button className="px-6 py-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors font-bold text-sm">
-                  View History
-                </button>
-              </div> */}
             </div>
 
             {/* Metrics Grid */}
@@ -306,10 +298,11 @@ export default function MainMetrics({ selectedWard }: MainMetricsProps) {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.1 }}
-                    className="p-5 rounded-2xl bg-white/5 border border-white/5 hover:border-white/10 transition-colors group/card"
+                    className="p-5 rounded-2xl border border-white/5 hover:border-white/10 transition-colors group/card backdrop-blur-sm"
+                    style={{ backgroundColor: 'rgba(157, 205, 90, 0.2)' }}
                   >
                     <div className="flex items-start justify-between mb-4">
-                      <div className="p-2.5 rounded-xl bg-white/5 group-hover/card:scale-110 transition-transform">
+                      <div className="p-2.5 rounded-xl group-hover/card:scale-110 transition-transform backdrop-blur-sm" style={{ backgroundColor: 'rgba(157, 205, 90, 0.2)' }}>
                         {item.icon}
                       </div>
                     </div>
@@ -329,7 +322,7 @@ export default function MainMetrics({ selectedWard }: MainMetricsProps) {
               </div>
 
               {/* Scale Visualizer */}
-              <div className="p-6 rounded-2xl bg-white/5 border border-white/5 space-y-4">
+              <div className="p-6 rounded-2xl border border-white/5 space-y-4 backdrop-blur-sm" style={{ backgroundColor: 'rgba(157, 205, 90, 0.2)' }}>
                 <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
                   <span>AQI Health Scale</span>
                   <span className="text-primary">Current: {aqiData.status}</span>

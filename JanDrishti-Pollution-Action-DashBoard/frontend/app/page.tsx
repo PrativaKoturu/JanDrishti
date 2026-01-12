@@ -105,7 +105,7 @@ export default function Dashboard() {
   }
 
   return (
-    <main className="min-h-screen bg-background relative">
+    <main className="min-h-screen relative">
 
       <div className="relative z-10 flex flex-col min-h-screen">
         <Header 
@@ -125,17 +125,23 @@ export default function Dashboard() {
           </div>
 
           {/* Navigation Tabs */}
-          <div className="sticky top-[73px] z-20 mb-8 border-b border-border bg-background/95 backdrop-blur-sm">
-            <div className="flex gap-1 overflow-x-auto">
+          <div className="sticky top-[73px] z-20 mb-8">
+            <div className="flex flex-wrap gap-2 overflow-x-auto">
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`px-4 py-3 text-sm font-medium transition-colors flex items-center gap-2 whitespace-nowrap border-b-2 ${
+                  className={`px-4 py-3 text-sm font-medium transition-all flex items-center gap-2 whitespace-nowrap rounded-lg relative ${
                     activeTab === tab.id
-                      ? "text-primary border-primary"
-                      : "text-muted-foreground border-transparent hover:text-foreground hover:border-muted-foreground/30"
+                      ? "text-foreground"
+                      : "text-foreground hover:opacity-90"
                   }`}
+                  style={{ 
+                    backgroundColor: '#f2ffbd',
+                    color: '#000',
+                    borderBottom: activeTab === tab.id ? '3px solid #004aad' : 'none',
+                    boxShadow: activeTab === tab.id ? '0 0 12px rgba(68,128,42,0.6), 0 4px 8px rgba(68,128,42,0.3)' : 'none'
+                  }}
                 >
                   {tab.icon}
                   {tab.label}
@@ -154,7 +160,7 @@ export default function Dashboard() {
       <ChatbotAssistant />
 
       {/* Footer */}
-      <footer className="border-t border-border bg-background py-6 mt-16">
+      <footer className="border-t border-border bg-background/80 backdrop-blur-sm py-6 mt-16">
         <div className="container-px">
           <div className="flex items-center justify-between text-sm text-muted-foreground">
             <div className="flex items-center gap-2">

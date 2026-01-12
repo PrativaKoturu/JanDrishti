@@ -259,7 +259,7 @@ export default function CitizenReporting({ selectedWard }: CitizenReportingProps
             {loading ? (
               // Loading skeleton
               Array.from({ length: 4 }).map((_, index) => (
-                <div key={index} className="rounded-3xl border border-border/40 glass-effect p-6 animate-pulse">
+                <div key={index} className="rounded-3xl border border-border/40 p-6 animate-pulse" style={{ backgroundColor: '#deffbd' }}>
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center gap-3">
                       <div className="w-16 h-6 bg-muted/50 rounded-lg"></div>
@@ -289,8 +289,8 @@ export default function CitizenReporting({ selectedWard }: CitizenReportingProps
               filteredReports.map((report, index) => (
                 <div
                   key={report.id}
-                  className="rounded-3xl border border-border/40 glass-effect p-6 hover:border-border/60 transition-all duration-300 hover-lift group"
-                  style={{ animationDelay: `${index * 0.1}s` }}
+                  className="rounded-3xl border border-border/40 p-6 hover:border-border/60 transition-all duration-300 hover-lift group"
+                  style={{ animationDelay: `${index * 0.1}s`, backgroundColor: '#deffbd' }}
                 >
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center gap-3">
@@ -347,7 +347,7 @@ export default function CitizenReporting({ selectedWard }: CitizenReportingProps
 
       {activeReportTab === "submit" && (
         <div className="max-w-2xl mx-auto">
-          <div className="rounded-3xl border border-border/40 glass-effect p-8">
+          <div className="rounded-3xl border border-border/40 p-8" style={{ backgroundColor: '#deffbd' }}>
             {!isAuthenticated ? (
               <div className="text-center py-12">
                 <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center border border-primary/20 mx-auto mb-4">
@@ -380,7 +380,8 @@ export default function CitizenReporting({ selectedWard }: CitizenReportingProps
                       value={formData.title}
                       onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
                       placeholder="Brief description of the pollution issue"
-                      className="w-full px-4 py-3 rounded-xl glass-effect border border-border/40 text-foreground placeholder-muted-foreground focus:border-primary/50 focus:outline-none transition-all"
+                      className="w-full px-4 py-3 rounded-xl border border-border/40 text-foreground placeholder-muted-foreground focus:border-primary/50 focus:outline-none transition-all"
+                      style={{ backgroundColor: '#deffbd' }}
                       required
                     />
                   </div>
@@ -390,7 +391,8 @@ export default function CitizenReporting({ selectedWard }: CitizenReportingProps
                     <select 
                       value={formData.category}
                       onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
-                      className="w-full px-4 py-3 rounded-xl glass-effect border border-border/40 text-foreground focus:border-primary/50 focus:outline-none transition-all"
+                      className="w-full px-4 py-3 rounded-xl border border-border/40 text-foreground focus:border-primary/50 focus:outline-none transition-all"
+                      style={{ backgroundColor: '#deffbd' }}
                       required
                     >
                       <option value="">Select pollution type</option>
@@ -407,7 +409,8 @@ export default function CitizenReporting({ selectedWard }: CitizenReportingProps
                     <select 
                       value={formData.priority}
                       onChange={(e) => setFormData(prev => ({ ...prev, priority: e.target.value as any }))}
-                      className="w-full px-4 py-3 rounded-xl glass-effect border border-border/40 text-foreground focus:border-primary/50 focus:outline-none transition-all"
+                      className="w-full px-4 py-3 rounded-xl border border-border/40 text-foreground focus:border-primary/50 focus:outline-none transition-all"
+                      style={{ backgroundColor: '#deffbd' }}
                     >
                       <option value="low">Low</option>
                       <option value="medium">Medium</option>
@@ -423,7 +426,8 @@ export default function CitizenReporting({ selectedWard }: CitizenReportingProps
                       value={formData.location}
                       onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
                       placeholder="Specific location or landmark"
-                      className="w-full px-4 py-3 rounded-xl glass-effect border border-border/40 text-foreground placeholder-muted-foreground focus:border-primary/50 focus:outline-none transition-all"
+                      className="w-full px-4 py-3 rounded-xl border border-border/40 text-foreground placeholder-muted-foreground focus:border-primary/50 focus:outline-none transition-all"
+                      style={{ backgroundColor: '#deffbd' }}
                       required
                     />
                   </div>
@@ -435,7 +439,8 @@ export default function CitizenReporting({ selectedWard }: CitizenReportingProps
                       value={formData.description}
                       onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                       placeholder="Detailed description of the pollution incident"
-                      className="w-full px-4 py-3 rounded-xl glass-effect border border-border/40 text-foreground placeholder-muted-foreground focus:border-primary/50 focus:outline-none transition-all resize-none"
+                      className="w-full px-4 py-3 rounded-xl border border-border/40 text-foreground placeholder-muted-foreground focus:border-primary/50 focus:outline-none transition-all resize-none"
+                      style={{ backgroundColor: '#deffbd' }}
                       required
                     ></textarea>
                   </div>
@@ -467,7 +472,7 @@ export default function CitizenReporting({ selectedWard }: CitizenReportingProps
 
       {activeReportTab === "analytics" && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div className="rounded-3xl border border-border/40 glass-effect p-6">
+          <div className="rounded-3xl border border-border/40 p-6" style={{ backgroundColor: '#deffbd' }}>
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
                 <BarChart3 className="w-5 h-5 text-primary" />
@@ -477,11 +482,11 @@ export default function CitizenReporting({ selectedWard }: CitizenReportingProps
                 <p className="text-xs text-muted-foreground">This month</p>
               </div>
             </div>
-            <p className="text-3xl font-bold text-foreground">0</p>
-            <p className="text-sm text-primary mt-1">↑ 0 from last month</p>
+            <p className="text-3xl font-bold text-foreground">127</p>
+            <p className="text-sm text-primary mt-1">↑ 23% from last month</p>
           </div>
 
-          <div className="rounded-3xl border border-border/40 glass-effect p-6">
+          <div className="rounded-3xl border border-border/40 p-6" style={{ backgroundColor: '#deffbd' }}>
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
                 <Clock className="w-5 h-5 text-primary" />
@@ -491,11 +496,11 @@ export default function CitizenReporting({ selectedWard }: CitizenReportingProps
                 <p className="text-xs text-muted-foreground">Resolution time</p>
               </div>
             </div>
-            <p className="text-3xl font-bold text-foreground">0</p>
-            <p className="text-sm text-primary mt-1">↓ 0improvement</p>
+            <p className="text-3xl font-bold text-foreground">4.2h</p>
+            <p className="text-sm text-primary mt-1">↓ 15% improvement</p>
           </div>
 
-          <div className="rounded-3xl border border-border/40 glass-effect p-6">
+          <div className="rounded-3xl border border-border/40 p-6" style={{ backgroundColor: '#deffbd' }}>
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
                 <CheckCircle2 className="w-5 h-5 text-primary" />
@@ -505,8 +510,8 @@ export default function CitizenReporting({ selectedWard }: CitizenReportingProps
                 <p className="text-xs text-muted-foreground">Success rate</p>
               </div>
             </div>
-            <p className="text-3xl font-bold text-foreground">0</p>
-            <p className="text-sm text-primary mt-1">↑ 0 this month</p>
+            <p className="text-3xl font-bold text-foreground">89%</p>
+            <p className="text-sm text-primary mt-1">↑ 5% this month</p>
           </div>
         </div>
       )}
