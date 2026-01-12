@@ -244,6 +244,21 @@ export const emailService = {
   }) {
     const response = await api.post('/api/email/subscribe', data)
     return response.data
+  },
+  async getSubscription() {
+    try {
+      const response = await api.get('/api/email/subscription')
+      return response.data
+    } catch (error: any) {
+      if (error?.response?.status === 404) {
+        return null
+      }
+      throw error
+    }
+  },
+  async unsubscribe(subscriptionId: string) {
+    const response = await api.delete(`/api/email/subscription/${subscriptionId}`)
+    return response.data
   }
 }
 

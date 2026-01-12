@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Building2, User } from "lucide-react"
-import { ModeToggle } from "./mode-toggle"
+import { Building2, User, Eye } from "lucide-react"
 import { useAuth } from "@/context/auth-context"
 import { aqiService, type WardData } from "@/lib/api"
 import {
@@ -70,33 +69,75 @@ export default function Header({ selectedWard, setSelectedWard }: HeaderProps) {
 
   return (
     <header
-      className={`sticky top-0 z-50 border-b border-border/50 shadow-sm transition-all h-[73px] flex items-center ${isScrolled
-        ? "shadow-md"
-        : ""
-        }`}
-      style={{ backgroundColor: '#44802a' }}
+      className={`sticky top-0 z-50 transition-all h-[73px] flex items-center ${
+        isScrolled ? "shadow-lg" : ""
+      }`}
+      style={{ 
+        background: 'linear-gradient(135deg, rgba(68, 128, 42, 0.95) 0%, rgba(90, 159, 58, 0.95) 100%)',
+        backdropFilter: 'blur(10px)',
+        boxShadow: isScrolled ? '0 4px 20px rgba(0, 0, 0, 0.15)' : '0 2px 8px rgba(0, 0, 0, 0.08)',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.15)'
+      }}
     >
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-        <div className="flex items-center gap-12">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between w-full">
+        <div className="flex items-center gap-8">
           {/* Logo */}
-          <div className="flex items-center gap-3">
-            <div className="text-lg font-semibold text-foreground">
-              JanDrishti
+          <div 
+            className="flex items-center gap-3 cursor-pointer group"
+            onClick={() => router.push('/')}
+          >
+            <div 
+              className="w-12 h-12 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110"
+              style={{
+                backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)'
+              }}
+            >
+              <Eye size={24} style={{ color: '#ffffff' }} />
+            </div>
+            <div className="flex items-baseline gap-1">
+              <span 
+                className="text-2xl font-bold leading-none"
+                style={{ 
+                  color: '#ffffff',
+                  fontFamily: 'system-ui, -apple-system, sans-serif',
+                  textShadow: '0 2px 4px rgba(0, 0, 0, 0.2)'
+                }}
+              >
+                जन
+              </span>
+              <span 
+                className="text-2xl font-bold leading-none tracking-tight"
+                style={{ 
+                  color: '#ffffff',
+                  fontFamily: 'system-ui, -apple-system, sans-serif',
+                  textShadow: '0 2px 4px rgba(0, 0, 0, 0.2)'
+                }}
+              >
+                Drishti
+              </span>
             </div>
           </div>
 
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           {/* Ward Selector */}
-          <div className="hidden md:flex items-center gap-2 px-3 py-2 rounded-lg border border-border/50 transition-colors" style={{ backgroundColor: '#d7d98a' }}>
-            <Building2 size={16} className="text-muted-foreground" />
+          <div 
+            className="hidden md:flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all hover:scale-105"
+            style={{ 
+              backgroundColor: '#f2ffbd',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.5)'
+            }}
+          >
+            <Building2 size={18} style={{ color: '#44802a' }} />
             <select
               value={selectedWard}
               onChange={(e) => setSelectedWard(e.target.value)}
-              className="bg-transparent text-sm font-medium text-foreground outline-none cursor-pointer border-none appearance-none pr-6"
+              className="bg-transparent text-sm font-semibold text-foreground outline-none cursor-pointer border-none appearance-none pr-6"
               style={{ 
-                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23000000' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
+                color: '#000',
+                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2344802a' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
                 backgroundRepeat: 'no-repeat',
                 backgroundPosition: 'right center',
                 paddingRight: '24px'
@@ -112,14 +153,25 @@ export default function Header({ selectedWard, setSelectedWard }: HeaderProps) {
 
           {/* Action Buttons */}
           <div className="flex items-center gap-2">
-            <ModeToggle />
-
             {/* User Authentication */}
             {isAuthenticated && user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="flex items-center gap-2 px-3 py-2 rounded-lg border border-border/50 transition-colors" style={{ backgroundColor: '#d7d98a' }}>
-                    <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium" style={{ backgroundColor: '#d7d98a', color: '#000' }}>
+                  <button 
+                    className="flex items-center gap-2 px-3 py-2 rounded-xl transition-all hover:scale-105"
+                    style={{ 
+                      backgroundColor: '#f2ffbd',
+                      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.5)'
+                    }}
+                  >
+                    <div 
+                      className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold"
+                      style={{ 
+                        backgroundColor: '#44802a',
+                        color: '#ffffff',
+                        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.15)'
+                      }}
+                    >
                       {user.email?.charAt(0).toUpperCase() || "U"}
                     </div>
                     {/* <span className="text-sm font-bold text-foreground hidden sm:inline">
@@ -155,10 +207,14 @@ export default function Header({ selectedWard, setSelectedWard }: HeaderProps) {
                 {/* Desktop Login Button */}
                 <button
                   onClick={() => router.push('/login')}
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-colors"
-                  style={{ backgroundColor: '#d7d98a', color: '#000' }}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm transition-all hover:scale-105"
+                  style={{ 
+                    backgroundColor: '#f2ffbd',
+                    color: '#000',
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.5)'
+                  }}
                 >
-                  <User size={16} />
+                  <User size={18} style={{ color: '#44802a' }} />
                   <span className="hidden sm:inline">Login</span>
                 </button>
               </>

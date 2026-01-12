@@ -35,7 +35,7 @@ export default function WeatherCard({ aqiData }: WeatherCardProps) {
       <div className="space-y-6">
         {[
           { label: "Temperature", value: `${aqiData.temperature}°C`, icon: "🌡️", color: "primary", gradient: "from-orange-500 to-red-500" },
-          { label: "Humidity", value: `${aqiData.humidity}%`, icon: "💧", color: "accent", gradient: "from-blue-500 to-cyan-500" },
+          { label: "Humidity", value: `${aqiData.humidity}%`, icon: "💧", color: "accent", gradient: "from-green-500 to-green-600" },
           { label: "Wind Speed", value: `${aqiData.windSpeed} km/h`, icon: "💨", color: "blue", gradient: "from-gray-500 to-slate-600" },
           { label: "UV Index", value: `${aqiData.uvIndex}`, icon: "☀️", color: "yellow", gradient: "from-yellow-500 to-orange-500" },
         ].map((item, idx) => (

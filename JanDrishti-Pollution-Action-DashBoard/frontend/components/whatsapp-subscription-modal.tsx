@@ -191,10 +191,19 @@ export default function WhatsAppSubscriptionModal({
           <div className="w-14 h-14 rounded-2xl bg-[#25D366]/20 flex items-center justify-center border border-[#25D366]/30">
             <MessageCircle className="w-7 h-7 text-[#25D366]" />
           </div>
-          <div>
-            <h2 className="text-2xl font-bold text-foreground">WhatsApp Updates</h2>
-            <p className="text-sm text-muted-foreground">Get AQI data and precautions on WhatsApp</p>
+          <div className="flex-1">
+            <h2 className="text-2xl font-bold text-foreground">
+              {hasActiveSubscription ? "WhatsApp Subscription Active" : "WhatsApp Updates"}
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              {hasActiveSubscription ? "Manage your WhatsApp subscription" : "Get AQI data and precautions on WhatsApp"}
+            </p>
           </div>
+          {hasActiveSubscription && (
+            <div className="px-3 py-1 rounded-full bg-green-500/20 border border-green-500/30">
+              <CheckCircle className="w-5 h-5 text-green-500" />
+            </div>
+          )}
         </div>
 
         {checkingStatus ? (
@@ -286,9 +295,9 @@ export default function WhatsAppSubscriptionModal({
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="rounded-xl border border-blue-500/30 bg-blue-500/10 p-4 mb-4">
+            <div className="rounded-xl border border-green-500/30 bg-green-500/10 p-4 mb-4">
               <div className="flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-blue-400 mt-0.5" />
+                <AlertCircle className="w-5 h-5 text-green-400 mt-0.5" />
                 <div className="text-sm text-foreground">
                   <p className="font-semibold mb-1">What you'll receive:</p>
                   <ul className="space-y-1 text-muted-foreground">

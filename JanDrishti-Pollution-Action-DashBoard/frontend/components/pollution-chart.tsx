@@ -31,13 +31,13 @@ export default function PollutionChart({ selectedPollutant, selectedWard }: Poll
   }
 
   const chartConfig = {
-    aqi: { color: "#3b82f6", label: "AQI" },
-    pm25: { color: "#8b5cf6", label: "PM2.5" },
-    pm10: { color: "#ec4899", label: "PM10" },
-    co: { color: "#06b6d4", label: "CO" },
-    so2: { color: "#f59e0b", label: "SO2" },
-    no2: { color: "#10b981", label: "NO2" },
-    o3: { color: "#14b8a6", label: "O3" },
+    aqi: { color: "#44802a", label: "AQI" },
+    pm25: { color: "#5a9f3a", label: "PM2.5" },
+    pm10: { color: "#6ab84a", label: "PM10" },
+    co: { color: "#7ac85a", label: "CO" },
+    so2: { color: "#8ad86a", label: "SO2" },
+    no2: { color: "#9ae87a", label: "NO2" },
+    o3: { color: "#aaf88a", label: "O3" },
   }
 
   useEffect(() => {
@@ -191,13 +191,13 @@ export default function PollutionChart({ selectedPollutant, selectedWard }: Poll
                 <Tooltip
                   contentStyle={{
                     backgroundColor: "rgba(15, 20, 25, 0.95)",
-                    border: "1px solid rgba(59, 130, 246, 0.3)",
+                    border: "1px solid rgba(68, 128, 42, 0.3)",
                     borderRadius: "12px",
                     boxShadow: "0 8px 32px rgba(0, 0, 0, 0.4)",
                     backdropFilter: "blur(20px)",
                   }}
                   labelStyle={{ color: "#f1f5f9", fontWeight: "600" }}
-                  cursor={{ stroke: "rgba(59, 130, 246, 0.3)", strokeWidth: 2 }}
+                  cursor={{ stroke: "rgba(68, 128, 42, 0.3)", strokeWidth: 2 }}
                 />
                 <Legend 
                   wrapperStyle={{ 
@@ -210,10 +210,10 @@ export default function PollutionChart({ selectedPollutant, selectedWard }: Poll
                 <Line
                   type="monotone"
                   dataKey={selectedKey}
-                  stroke={chartConfig[selectedKey]?.color || "#3b82f6"}
+                  stroke={chartConfig[selectedKey]?.color || "#44802a"}
                   strokeWidth={4}
                   dot={{ 
-                    fill: chartConfig[selectedKey]?.color || "#3b82f6", 
+                    fill: chartConfig[selectedKey]?.color || "#44802a", 
                     r: 6,
                     strokeWidth: 2,
                     stroke: "rgba(255,255,255,0.2)"
@@ -222,7 +222,7 @@ export default function PollutionChart({ selectedPollutant, selectedWard }: Poll
                     r: 8, 
                     strokeWidth: 3,
                     stroke: "rgba(255,255,255,0.3)",
-                    fill: chartConfig[selectedKey]?.color || "#3b82f6"
+                    fill: chartConfig[selectedKey]?.color || "#44802a"
                   }}
                   isAnimationActive={true}
                   animationDuration={1500}

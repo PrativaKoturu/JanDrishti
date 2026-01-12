@@ -195,9 +195,9 @@ export default function AIForecast({ selectedWard }: AIForecastProps) {
         title: "Weather Conditions",
         description: "Stagnant air and low wind speed trap pollutants near the ground",
         impact: isVeryHigh ? 80 : 65,
-        color: "text-blue-400",
-        bgColor: "bg-blue-500/10",
-        borderColor: "border-blue-500/30",
+        color: "text-green-400",
+        bgColor: "bg-green-500/10",
+        borderColor: "border-green-500/30",
         details: [
           "Low wind speed preventing dispersion",
           "Temperature inversion trapping pollutants",
@@ -408,8 +408,8 @@ export default function AIForecast({ selectedWard }: AIForecastProps) {
               <AreaChart data={forecastData}>
                 <defs>
                   <linearGradient id="colorForecast" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.5}/>
-                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="#44802a" stopOpacity={0.5}/>
+                    <stop offset="95%" stopColor="#44802a" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.2)" strokeWidth={1} />
@@ -440,12 +440,12 @@ export default function AIForecast({ selectedWard }: AIForecastProps) {
                 <Area
                   type="monotone"
                   dataKey={selectedMetric}
-                  stroke="#3b82f6"
+                  stroke="#44802a"
                   strokeWidth={5}
                   fillOpacity={1}
                   fill="url(#colorForecast)"
                   dot={{ 
-                    fill: "#3b82f6", 
+                    fill: "#44802a", 
                     r: 5,
                     strokeWidth: 2,
                     stroke: "rgba(255,255,255,0.3)"
@@ -454,7 +454,7 @@ export default function AIForecast({ selectedWard }: AIForecastProps) {
                     r: 8, 
                     strokeWidth: 3,
                     stroke: "rgba(255,255,255,0.4)",
-                    fill: "#3b82f6"
+                    fill: "#44802a"
                   }}
                 />
               </AreaChart>
@@ -545,8 +545,8 @@ export default function AIForecast({ selectedWard }: AIForecastProps) {
       {getSuggestions().length > 0 && !loading && (
         <div className="space-y-4">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center border border-blue-500/30">
-              <Info className="w-6 h-6 text-blue-400" />
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500/20 to-green-600/20 flex items-center justify-center border border-green-500/30">
+              <Info className="w-6 h-6 text-green-400" />
             </div>
             <div>
               <h3 className="text-xl font-bold text-foreground">AI Recommendations</h3>
@@ -648,7 +648,7 @@ function CauseCard({ cause, IconComponent }: { cause: any, IconComponent: any })
                           cause.color.includes('red') ? 'bg-red-500' :
                           cause.color.includes('orange') ? 'bg-orange-500' :
                           cause.color.includes('amber') ? 'bg-amber-500' :
-                          cause.color.includes('blue') ? 'bg-blue-500' :
+                          cause.color.includes('blue') ? 'bg-green-500' :
                           'bg-purple-500'
                         }`}
                         style={{ width: `${cause.impact}%` }}

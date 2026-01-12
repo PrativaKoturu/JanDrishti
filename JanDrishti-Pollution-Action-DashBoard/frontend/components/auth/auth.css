@@ -72,7 +72,7 @@
 }
 
 .close-btn:hover {
-    color: #667eea;
+    color: #44802a;
 }
 
 /* Login Box in Modal */
@@ -112,12 +112,12 @@
 }
 
 .login-box::-webkit-scrollbar-thumb {
-    background: #667eea;
+    background: #44802a;
     border-radius: 10px;
 }
 
 .login-box::-webkit-scrollbar-thumb:hover {
-    background: #764ba2;
+    background: #5a9f3a;
 }
 
 .login-box h1 {
@@ -191,15 +191,15 @@
 
 .form-group input:focus {
     outline: none;
-    border-color: #667eea;
+    border-color: #44802a;
     background: white;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    box-shadow: 0 0 0 3px rgba(68, 128, 42, 0.1);
 }
 
 .login-btn {
     width: 100%;
     padding: 13px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #44802a 0%, #5a9f3a 100%);
     color: white;
     border: none;
     border-radius: 8px;
@@ -208,12 +208,12 @@
     cursor: pointer;
     transition: all 0.3s ease;
     margin-top: 8px;
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 4px 15px rgba(68, 128, 42, 0.3);
 }
 
 .login-btn:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 6px 20px rgba(68, 128, 42, 0.4);
 }
 
 .login-btn:active:not(:disabled) {
@@ -238,7 +238,7 @@
 }
 
 .signup-link a {
-    color: #667eea;
+    color: #44802a;
     text-decoration: none;
     font-weight: 600;
     transition: color 0.3s ease;
@@ -246,7 +246,7 @@
 }
 
 .signup-link a:hover {
-    color: #764ba2;
+    color: #5a9f3a;
 }
 
 /* Responsive Design */

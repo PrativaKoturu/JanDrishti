@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { X, Mail, CheckCircle, AlertCircle, Loader2 } from "lucide-react"
+import { X, Mail, CheckCircle, AlertCircle, Loader2, LogOut } from "lucide-react"
 import { useAuth } from "@/context/auth-context"
 import { emailService } from "@/lib/api"
 import { toast } from "sonner"
@@ -22,14 +22,48 @@ export default function EmailSubscriptionModal({
   const [wardNo, setWardNo] = useState(selectedWard || "")
   const [frequency, setFrequency] = useState("daily")
   const [loading, setLoading] = useState(false)
+  const [isSubscribed, setIsSubscribed] = useState(false)
+  const [subscriptionId, setSubscriptionId] = useState<string | null>(null)
+  const [checkingStatus, setCheckingStatus] = useState(false)
 
   useEffect(() => {
     if (open && user) {
       if (user.email) {
         setEmail(user.email)
       }
+      checkSubscriptionStatus()
+    } else if (open && !user) {
+      setIsSubscribed(false)
+      setSubscriptionId(null)
     }
   }, [open, user])
+
+  const checkSubscriptionStatus = async () => {
+    if (!user) return
+    
+    setCheckingStatus(true)
+    try {
+      const subscription = await emailService.getSubscription()
+      if (subscription && subscription.is_active) {
+        setIsSubscribed(true)
+        setSubscriptionId(subscription.id || subscription.subscription_id || null)
+        setEmail(subscription.email || user.email || "")
+        setWardNo(subscription.ward_no || selectedWard || "")
+        setFrequency(subscription.frequency || "daily")
+      } else {
+        setIsSubscribed(false)
+        setSubscriptionId(null)
+      }
+    } catch (error: any) {
+      if (error?.response?.status !== 404) {
+        console.error("Error checking subscription status:", error)
+      }
+      setIsSubscribed(false)
+      setSubscriptionId(null)
+    } finally {
+      setCheckingStatus(false)
+    }
+  }
 
   useEffect(() => {
     if (selectedWard) {
@@ -71,6 +105,7 @@ export default function EmailSubscriptionModal({
         description: "You'll receive AQI updates and precautions via email"
       })
       
+      setIsSubscribed(true)
       onClose()
     } catch (error: any) {
       console.error("Email subscription error:", error)
@@ -89,6 +124,7 @@ export default function EmailSubscriptionModal({
         toast.success("✅ Subscribed successfully!", {
           description: "You'll receive AQI updates and precautions via email"
         })
+        setIsSubscribed(true)
         onClose()
         return
       }
@@ -112,6 +148,31 @@ export default function EmailSubscriptionModal({
     }
   }
 
+  const handleUnsubscribe = async () => {
+    if (!subscriptionId) {
+      toast.error("Subscription ID not found")
+      return
+    }
+
+    setLoading(true)
+    try {
+      await emailService.unsubscribe(subscriptionId)
+      toast.success("✅ Unsubscribed successfully!", {
+        description: "You will no longer receive email updates"
+      })
+      setIsSubscribed(false)
+      setSubscriptionId(null)
+      onClose()
+    } catch (error: any) {
+      console.error("Unsubscribe error:", error)
+      toast.error("❌ Failed to unsubscribe", {
+        description: error?.response?.data?.detail || "Please try again later"
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
   if (!open) return null
 
   return (
@@ -125,19 +186,28 @@ export default function EmailSubscriptionModal({
         </button>
 
         <div className="flex items-center gap-4 mb-6">
-          <div className="w-14 h-14 rounded-2xl bg-blue-500/20 flex items-center justify-center border border-blue-500/30">
-            <Mail className="w-7 h-7 text-blue-500" />
+          <div className="w-14 h-14 rounded-2xl bg-green-500/20 flex items-center justify-center border border-green-500/30">
+            <Mail className="w-7 h-7 text-green-500" />
           </div>
-          <div>
-            <h2 className="text-2xl font-bold text-foreground">Email Updates</h2>
-            <p className="text-sm text-muted-foreground">Get AQI data and precautions via email</p>
+          <div className="flex-1">
+            <h2 className="text-2xl font-bold text-foreground">
+              {isSubscribed ? "Email Subscription Active" : "Email Updates"}
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              {isSubscribed ? "Manage your email subscription" : "Get AQI data and precautions via email"}
+            </p>
           </div>
+          {isSubscribed && (
+            <div className="px-3 py-1 rounded-full bg-green-500/20 border border-green-500/30">
+              <CheckCircle className="w-5 h-5 text-green-500" />
+            </div>
+          )}
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="rounded-xl border border-blue-500/30 bg-blue-500/10 p-4 mb-4">
+          <div className="rounded-xl border border-green-500/30 bg-green-500/10 p-4 mb-4">
             <div className="flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-blue-400 mt-0.5" />
+              <AlertCircle className="w-5 h-5 text-green-400 mt-0.5" />
               <div className="text-sm text-foreground">
                 <p className="font-semibold mb-1">What you'll receive:</p>
                 <ul className="space-y-1 text-muted-foreground">
@@ -197,23 +267,56 @@ export default function EmailSubscriptionModal({
             </select>
           </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full px-6 py-3 rounded-xl bg-blue-500 text-white font-semibold hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Subscribing...
-              </>
-            ) : (
-              <>
-                <Mail className="w-4 h-4" />
-                Subscribe to Email Updates
-              </>
-            )}
-          </button>
+          {isSubscribed ? (
+            <div className="space-y-3">
+              <div className="p-4 rounded-xl border border-green-500/30 bg-green-500/10">
+                <div className="flex items-center gap-2 mb-2">
+                  <CheckCircle className="w-5 h-5 text-green-500" />
+                  <p className="text-sm font-semibold text-foreground">You are subscribed!</p>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  You're receiving {frequency === 'daily' ? 'daily' : frequency === 'hourly' ? 'hourly' : 'critical alerts only'} updates
+                  {wardNo ? ` for ward ${wardNo}` : ' for all wards'}.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={handleUnsubscribe}
+                disabled={loading}
+                className="w-full px-6 py-3 rounded-xl bg-red-500 text-white font-semibold hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Unsubscribing...
+                  </>
+                ) : (
+                  <>
+                    <LogOut className="w-4 h-4" />
+                    Unsubscribe
+                  </>
+                )}
+              </button>
+            </div>
+          ) : (
+            <button
+              type="submit"
+              disabled={loading || checkingStatus}
+              className="w-full px-6 py-3 rounded-xl bg-green-500 text-white font-semibold hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {loading || checkingStatus ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  {checkingStatus ? "Checking..." : "Subscribing..."}
+                </>
+              ) : (
+                <>
+                  <Mail className="w-4 h-4" />
+                  Subscribe to Email Updates
+                </>
+              )}
+            </button>
+          )}
 
           <p className="text-xs text-center text-muted-foreground">
             ✓ Works immediately - No setup required

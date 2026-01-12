@@ -342,7 +342,7 @@ export default function ChatbotAssistant() {
               <button
                 onClick={() => handleSuggestionClick("Government helplines")}
                 disabled={!isAuthenticated}
-                className="px-3 py-1 rounded-lg bg-background border border-border text-xs text-foreground hover:border-blue-500/40 hover:text-blue-400 transition-all duration-300 disabled:opacity-50"
+                className="px-3 py-1 rounded-lg bg-background border border-border text-xs text-foreground hover:border-green-500/40 hover:text-green-400 transition-all duration-300 disabled:opacity-50"
               >
                 📞 Helpline
               </button>

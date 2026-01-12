@@ -231,13 +231,13 @@ export default function HistoricalAnalysis({ selectedPollutant }: HistoricalAnal
             <Tooltip
               contentStyle={{
                 backgroundColor: "rgba(15, 20, 25, 0.95)",
-                border: "1px solid rgba(59, 130, 246, 0.3)",
+                    border: "1px solid rgba(68, 128, 42, 0.3)",
                 borderRadius: "12px",
                 backdropFilter: "blur(20px)",
               }}
             />
             <Legend />
-            <Line type="monotone" dataKey={dataKey} stroke="#3b82f6" strokeWidth={3} />
+            <Line type="monotone" dataKey={dataKey} stroke="#44802a" strokeWidth={3} />
           </LineChart>
         )
       case "seasonal":
@@ -249,12 +249,12 @@ export default function HistoricalAnalysis({ selectedPollutant }: HistoricalAnal
             <Tooltip
               contentStyle={{
                 backgroundColor: "rgba(15, 20, 25, 0.95)",
-                border: "1px solid rgba(59, 130, 246, 0.3)",
+                    border: "1px solid rgba(68, 128, 42, 0.3)",
                 borderRadius: "12px",
                 backdropFilter: "blur(20px)",
               }}
             />
-            <Bar dataKey={dataKey} fill="#3b82f6" radius={[4, 4, 0, 0]} />
+            <Bar dataKey={dataKey} fill="#44802a" radius={[4, 4, 0, 0]} />
           </BarChart>
         )
       default:
@@ -262,8 +262,8 @@ export default function HistoricalAnalysis({ selectedPollutant }: HistoricalAnal
           <AreaChart data={data}>
             <defs>
               <linearGradient id="colorGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
-                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                <stop offset="5%" stopColor="#44802a" stopOpacity={0.3}/>
+                <stop offset="95%" stopColor="#44802a" stopOpacity={0}/>
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" />
@@ -272,7 +272,7 @@ export default function HistoricalAnalysis({ selectedPollutant }: HistoricalAnal
             <Tooltip
               contentStyle={{
                 backgroundColor: "rgba(15, 20, 25, 0.95)",
-                border: "1px solid rgba(59, 130, 246, 0.3)",
+                    border: "1px solid rgba(68, 128, 42, 0.3)",
                 borderRadius: "12px",
                 backdropFilter: "blur(20px)",
               }}
@@ -280,7 +280,7 @@ export default function HistoricalAnalysis({ selectedPollutant }: HistoricalAnal
             <Area
               type="monotone"
               dataKey={dataKey}
-              stroke="#3b82f6"
+              stroke="#44802a"
               strokeWidth={3}
               fillOpacity={1}
               fill="url(#colorGradient)"
@@ -502,7 +502,7 @@ export default function HistoricalAnalysis({ selectedPollutant }: HistoricalAnal
           <div className="space-y-4">
             <div className="p-4 rounded-xl border border-border/30" style={{ backgroundColor: '#deffbd' }}>
               <div className="flex items-center gap-2 mb-2">
-                      <span className="text-blue-400">📅</span>
+                      <span className="text-green-500">📅</span>
                       <p className="font-semibold text-foreground text-sm">Data Collection</p>
               </div>
                     <p className="text-xs text-muted-foreground">

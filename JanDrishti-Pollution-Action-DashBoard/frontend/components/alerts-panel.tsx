@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Bell, AlertTriangle, ShieldAlert, Info, MessageCircle, Mail, MoreVertical, Loader2 } from "lucide-react"
+import { Bell, AlertTriangle, ShieldAlert, Info, MessageCircle, Mail, MoreVertical, Loader2, X, CheckCircle } from "lucide-react"
+import { useRouter } from "next/navigation"
 import WhatsAppSubscriptionModal from "./whatsapp-subscription-modal"
 import EmailSubscriptionModal from "./email-subscription-modal"
 import { useAuth } from "@/context/auth-context"
-import { aqiService, type WardData } from "@/lib/api"
+import { aqiService, emailService, whatsappService, type WardData } from "@/lib/api"
 
 interface Alert {
   id: number
@@ -26,7 +27,13 @@ export default function AlertsPanel() {
   const [whatsappModalOpen, setWhatsappModalOpen] = useState(false)
   const [emailModalOpen, setEmailModalOpen] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [emailSubscribed, setEmailSubscribed] = useState(false)
+  const [whatsappSubscribed, setWhatsappSubscribed] = useState(false)
+  const [checkingSubscriptions, setCheckingSubscriptions] = useState(false)
+  const [showLoginDialog, setShowLoginDialog] = useState(false)
+  const [loginDialogType, setLoginDialogType] = useState<'email' | 'whatsapp' | null>(null)
   const { user } = useAuth()
+  const router = useRouter()
 
   // Generate alerts from real AQI data
   const generateAlertsFromAQIData = async () => {
@@ -187,8 +194,46 @@ export default function AlertsPanel() {
     }
   }
 
+  // Check subscription status
+  const checkSubscriptions = async () => {
+    if (!user) {
+      setEmailSubscribed(false)
+      setWhatsappSubscribed(false)
+      return
+    }
+
+    setCheckingSubscriptions(true)
+    try {
+      // Check email subscription
+      try {
+        const emailSub = await emailService.getSubscription()
+        setEmailSubscribed(emailSub?.is_active || false)
+      } catch (error: any) {
+        if (error?.response?.status !== 404) {
+          console.error("Error checking email subscription:", error)
+        }
+        setEmailSubscribed(false)
+      }
+
+      // Check WhatsApp subscription
+      try {
+        const whatsappSub = await whatsappService.getSubscription()
+        const hasActiveSub = whatsappSub?.subscriptions?.some((s: any) => s.is_active) || false
+        setWhatsappSubscribed(hasActiveSub)
+      } catch (error: any) {
+        if (error?.response?.status !== 404) {
+          console.error("Error checking WhatsApp subscription:", error)
+        }
+        setWhatsappSubscribed(false)
+      }
+    } finally {
+      setCheckingSubscriptions(false)
+    }
+  }
+
   useEffect(() => {
     generateAlertsFromAQIData()
+    checkSubscriptions()
     
     // Refresh alerts every 5 minutes
     const interval = setInterval(() => {
@@ -196,7 +241,14 @@ export default function AlertsPanel() {
     }, 5 * 60 * 1000)
     
     return () => clearInterval(interval)
-  }, [])
+  }, [user])
+
+  // Refresh subscription status when modals close
+  useEffect(() => {
+    if (!emailModalOpen && !whatsappModalOpen) {
+      checkSubscriptions()
+    }
+  }, [emailModalOpen, whatsappModalOpen])
 
   const getPriorityStyles = (priority: string) => {
     switch (priority) {
@@ -222,8 +274,14 @@ export default function AlertsPanel() {
     <div className="flex flex-col h-[550px] relative">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl grad-primary flex items-center justify-center text-primary-foreground shadow-lg shadow-primary/20">
-            <Bell size={20} />
+          <div 
+            className="w-10 h-10 rounded-xl flex items-center justify-center"
+            style={{
+              backgroundColor: '#deffbd',
+              boxShadow: '0 2px 8px rgba(68, 128, 42, 0.15)'
+            }}
+          >
+            <Bell size={20} style={{ color: '#44802a' }} />
           </div>
           <div>
             <h3 className="text-xl font-bold">Critical Alerts</h3>
@@ -259,18 +317,31 @@ export default function AlertsPanel() {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: i * 0.1 }}
-                className={`p-5 rounded-[1.5rem] border transition-all duration-300 group cursor-pointer ${
-                  alert.isRead 
-                    ? "border-white/5 hover:border-white/10" 
-                    : "border-white/5 hover:border-white/10"
-                }`}
+                className="p-5 rounded-[1.5rem] transition-all duration-300 group cursor-pointer"
                 style={{ 
-                  backgroundColor: '#deffbd'
+                  backgroundColor: '#deffbd',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)'
                 }}
               >
                 <div className="flex items-start gap-4">
-                  <div className={`p-2.5 rounded-xl ${getPriorityStyles(alert.priority)}`}>
-                    {getTypeIcon(alert.type)}
+                  <div 
+                    className="p-2.5 rounded-xl flex items-center justify-center"
+                    style={{
+                      backgroundColor: alert.priority === 'critical' ? 'rgba(239, 68, 68, 0.1)' : 
+                                      alert.priority === 'high' ? 'rgba(249, 115, 22, 0.1)' : 
+                                      alert.priority === 'medium' ? 'rgba(245, 158, 11, 0.1)' : 
+                                      'rgba(16, 185, 129, 0.1)',
+                      boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)'
+                    }}
+                  >
+                    <div style={{
+                      color: alert.priority === 'critical' ? '#ef4444' : 
+                            alert.priority === 'high' ? '#f97316' : 
+                            alert.priority === 'medium' ? '#f59e0b' : 
+                            '#10b981'
+                    }}>
+                      {getTypeIcon(alert.type)}
+                    </div>
                   </div>
                   <div className="flex-1 space-y-2">
                     <div className="flex items-start justify-between">
@@ -306,44 +377,156 @@ export default function AlertsPanel() {
         <button
           onClick={() => {
             if (!user) {
-              alert("Please login to subscribe to email updates")
+              setLoginDialogType('email')
+              setShowLoginDialog(true)
               return
             }
             setEmailModalOpen(true)
           }}
-          className="w-full p-4 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center gap-3 group hover:bg-blue-500/20 transition-all duration-300"
+          className="w-full p-4 rounded-2xl flex items-center gap-4 group hover:scale-[1.02] transition-all duration-300"
+          style={{ 
+            backgroundColor: emailSubscribed ? '#d1fae5' : '#deffbd',
+            boxShadow: emailSubscribed 
+              ? '0 4px 12px rgba(16, 185, 129, 0.2), 0 2px 4px rgba(0,0,0,0.05)' 
+              : '0 4px 12px rgba(68, 128, 42, 0.15), 0 2px 4px rgba(0,0,0,0.05)'
+          }}
         >
-          <div className="w-8 h-8 rounded-lg bg-blue-500 flex items-center justify-center text-white shadow-lg shadow-blue-500/20 group-hover:scale-110 transition-transform">
-            <Mail size={18} />
+          <div 
+            className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110"
+            style={{ 
+              backgroundColor: emailSubscribed ? '#10b981' : '#44802a',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)'
+            }}
+          >
+            <Mail size={20} className="text-white" />
           </div>
-          <div className="text-left flex-1">
-            <div className="text-xs font-bold text-foreground">Subscribe to Email</div>
-            <div className="text-[10px] font-bold text-blue-500 uppercase tracking-widest">Instant Delivery</div>
+          <div className="text-left flex-1 min-w-0">
+            <div className="text-sm font-bold text-foreground mb-1">
+              {emailSubscribed ? 'Email Subscribed' : 'Subscribe to Email'}
+            </div>
+            <div className="text-[10px] font-bold uppercase tracking-widest" style={{ color: emailSubscribed ? '#10b981' : '#44802a' }}>
+              {emailSubscribed ? 'Active Subscription' : 'Instant Delivery'}
+            </div>
           </div>
-          <span className="text-[10px] text-green-400 font-bold">✓ Ready</span>
+          <div className="flex items-center gap-1 flex-shrink-0">
+            {emailSubscribed ? (
+              <>
+                <CheckCircle size={16} className="text-green-600" />
+                <span className="text-[10px] font-bold text-green-600">Active</span>
+              </>
+            ) : (
+              <>
+                <span className="text-green-500 text-sm">✓</span>
+                <span className="text-[10px] font-bold" style={{ color: '#44802a' }}>Ready</span>
+              </>
+            )}
+          </div>
         </button>
 
         {/* WhatsApp Subscription Button */}
         <button
           onClick={() => {
             if (!user) {
-              alert("Please login to subscribe to WhatsApp updates")
+              setLoginDialogType('whatsapp')
+              setShowLoginDialog(true)
               return
             }
             setWhatsappModalOpen(true)
           }}
-          className="w-full p-4 rounded-2xl bg-[#25D366]/10 border border-[#25D366]/20 flex items-center justify-center gap-3 group hover:bg-[#25D366]/20 transition-all duration-300"
+          className="w-full p-4 rounded-2xl flex items-center gap-4 group hover:scale-[1.02] transition-all duration-300"
+          style={{ 
+            backgroundColor: whatsappSubscribed ? '#d1fae5' : '#deffbd',
+            boxShadow: whatsappSubscribed 
+              ? '0 4px 12px rgba(16, 185, 129, 0.2), 0 2px 4px rgba(0,0,0,0.05)' 
+              : '0 4px 12px rgba(37, 211, 102, 0.2), 0 2px 4px rgba(0,0,0,0.05)'
+          }}
         >
-          <div className="w-8 h-8 rounded-lg bg-[#25D366] flex items-center justify-center text-white shadow-lg shadow-[#25D366]/20 group-hover:scale-110 transition-transform">
-            <MessageCircle size={18} />
+          <div 
+            className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110"
+            style={{ 
+              backgroundColor: whatsappSubscribed ? '#10b981' : '#25D366',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)'
+            }}
+          >
+            <MessageCircle size={20} className="text-white" />
           </div>
-          <div className="text-left flex-1">
-            <div className="text-xs font-bold text-foreground">Subscribe to WhatsApp</div>
-            <div className="text-[10px] font-bold text-[#25D366] uppercase tracking-widest">Instant Safety Protocol</div>
+          <div className="text-left flex-1 min-w-0">
+            <div className="text-sm font-bold text-foreground mb-1">
+              {whatsappSubscribed ? 'WhatsApp Subscribed' : 'Subscribe to WhatsApp'}
+            </div>
+            <div className="text-[10px] font-bold uppercase tracking-widest" style={{ color: whatsappSubscribed ? '#10b981' : '#25D366' }}>
+              {whatsappSubscribed ? 'Active Subscription' : 'Instant Safety Protocol'}
+            </div>
           </div>
-          <span className="text-[10px] text-yellow-400 font-bold">⚠ Sandbox</span>
+          <div className="flex items-center gap-1 flex-shrink-0">
+            {whatsappSubscribed ? (
+              <>
+                <CheckCircle size={16} className="text-green-600" />
+                <span className="text-[10px] font-bold text-green-600">Active</span>
+              </>
+            ) : (
+              <>
+                <span className="text-amber-500 text-sm">▲</span>
+                <span className="text-[10px] font-bold text-amber-600">Sandbox</span>
+              </>
+            )}
+          </div>
         </button>
       </div>
+
+      {/* Login Dialog */}
+      {showLoginDialog && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowLoginDialog(false)
+            }
+          }}
+        >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            className="rounded-2xl p-6 max-w-md w-full"
+            style={{ backgroundColor: '#deffbd', border: '2px solid #44802a' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-foreground">Login Required</h3>
+              <button
+                onClick={() => setShowLoginDialog(false)}
+                className="p-1 rounded-lg hover:bg-white/20 transition-colors"
+              >
+                <X size={20} className="text-foreground" />
+              </button>
+            </div>
+            <p className="text-sm text-foreground/80 mb-6">
+              You need to be logged in to {loginDialogType === 'email' ? 'subscribe to email updates' : 'subscribe to WhatsApp updates'}.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowLoginDialog(false)}
+                className="flex-1 px-4 py-2 rounded-lg font-medium transition-colors"
+                style={{ backgroundColor: '#f2ffbd', color: '#000' }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setShowLoginDialog(false)
+                  router.push('/login')
+                }}
+                className="flex-1 px-4 py-2 rounded-lg font-medium text-white transition-colors"
+                style={{ backgroundColor: '#44802a' }}
+              >
+                Go to Login
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
 
       <EmailSubscriptionModal
         open={emailModalOpen}

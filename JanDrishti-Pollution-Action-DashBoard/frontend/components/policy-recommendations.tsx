@@ -343,7 +343,7 @@ export default function PolicyRecommendations({ aqiData }: PolicyRecommendations
       case "critical": return "bg-red-500/20 text-red-400 border-red-500/30"
       case "high": return "bg-orange-500/20 text-orange-400 border-orange-500/30"
       case "medium": return "bg-yellow-500/20 text-yellow-400 border-yellow-500/30"
-      case "preventive": return "bg-blue-500/20 text-blue-400 border-blue-500/30"
+      case "preventive": return "bg-green-500/20 text-green-400 border-green-500/30"
       default: return "bg-gray-500/20 text-gray-400 border-gray-500/30"
     }
   }
@@ -405,14 +405,14 @@ export default function PolicyRecommendations({ aqiData }: PolicyRecommendations
                 <div
                   key={index}
                   className={`rounded-2xl border ${
-                    precaution.color === "blue" ? "border-blue-500/30 bg-gradient-to-br from-blue-500/10 to-blue-500/5" :
+                    precaution.color === "blue" ? "border-green-500/30 bg-gradient-to-br from-green-500/10 to-green-500/5" :
                     precaution.color === "orange" ? "border-orange-500/30 bg-gradient-to-br from-orange-500/10 to-orange-500/5" :
                     "border-green-500/30 bg-gradient-to-br from-green-500/10 to-green-500/5"
                   } p-6 hover:scale-105 transition-all duration-300`}
                 >
                   <div className="flex items-center gap-3 mb-4">
                     <div className={`w-12 h-12 rounded-xl ${
-                      precaution.color === "blue" ? "bg-blue-500/20" :
+                      precaution.color === "blue" ? "bg-green-500/20" :
                       precaution.color === "orange" ? "bg-orange-500/20" :
                       "bg-green-500/20"
                     } flex items-center justify-center`}>
@@ -424,7 +424,7 @@ export default function PolicyRecommendations({ aqiData }: PolicyRecommendations
                     {precaution.items.map((item, itemIndex) => (
                       <li key={itemIndex} className="flex items-start gap-3">
                         <CheckCircle className={`w-5 h-5 ${
-                          precaution.color === "blue" ? "text-blue-400" :
+                          precaution.color === "blue" ? "text-green-400" :
                           precaution.color === "orange" ? "text-orange-400" :
                           "text-green-400"
                         } mt-0.5 flex-shrink-0`} />
@@ -495,8 +495,8 @@ export default function PolicyRecommendations({ aqiData }: PolicyRecommendations
       {activeSection === "regulations" && (
         <div className="space-y-6">
           <div className="flex items-center gap-4 mb-6">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500/30 to-indigo-500/30 flex items-center justify-center border border-blue-500/30">
-              <Building2 className="w-7 h-7 text-blue-400" />
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-green-500/30 to-green-600/30 flex items-center justify-center border border-green-500/30">
+              <Building2 className="w-7 h-7 text-green-400" />
             </div>
             <div>
               <h3 className="text-2xl font-bold text-foreground">Government of India Policies</h3>
@@ -548,7 +548,7 @@ export default function PolicyRecommendations({ aqiData }: PolicyRecommendations
                   <ul className="space-y-2">
                     {policy.keyFeatures.map((feature, featIndex) => (
                       <li key={featIndex} className="flex items-start gap-2 text-sm text-foreground">
-                        <CheckCircle className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" />
+                        <CheckCircle className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" />
                         <span>{feature}</span>
                       </li>
                     ))}

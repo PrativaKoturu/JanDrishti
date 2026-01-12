@@ -213,13 +213,13 @@ export default function AuthDialog({ open, onOpenChange, mode: initialMode = "lo
           )}
 
           {successMessage && (
-            <div className="p-4 rounded-lg bg-blue-500/10 border border-blue-500/30">
+            <div className="p-4 rounded-lg bg-green-500/10 border border-green-500/30">
               <div className="flex items-start gap-3">
-                <span className="text-blue-400 text-xl">📧</span>
+                <span className="text-green-400 text-xl">📧</span>
                 <div className="flex-1">
-                  <p className="text-blue-400 font-semibold mb-1">Check Your Email!</p>
-                  <p className="text-blue-300 text-sm">{successMessage}</p>
-                  <p className="text-blue-300/80 text-xs mt-2">
+                  <p className="text-green-400 font-semibold mb-1">Check Your Email!</p>
+                  <p className="text-green-300 text-sm">{successMessage}</p>
+                  <p className="text-green-300/80 text-xs mt-2">
                     After confirming your email, you can close this dialog and login.
                   </p>
                 </div>

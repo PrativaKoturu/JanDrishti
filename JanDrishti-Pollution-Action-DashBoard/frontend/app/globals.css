@@ -11,21 +11,21 @@
   --card-foreground: #020617;
   --popover: #ffffff;
   --popover-foreground: #020617;
-  --primary: #0ea5e9;
+  --primary: #44802a;
   --primary-foreground: #ffffff;
-  --secondary: #f1f5f9;
-  --secondary-foreground: #0f172a;
-  --muted: #f1f5f9;
+  --secondary: #d7d98a;
+  --secondary-foreground: #000000;
+  --muted: #deffbd;
   --muted-foreground: #64748b;
-  --accent: #f1f5f9;
-  --accent-foreground: #0f172a;
+  --accent: #5a9f3a;
+  --accent-foreground: #ffffff;
   --destructive: #ef4444;
   --destructive-foreground: #f8fafc;
-  --border: #e2e8f0;
-  --input: #e2e8f0;
-  --ring: #0ea5e9;
-  --chart-1: #0ea5e9;
-  --chart-2: #6366f1;
+  --border: #44802a;
+  --input: #deffbd;
+  --ring: #44802a;
+  --chart-1: #44802a;
+  --chart-2: #5a9f3a;
   --chart-3: #10b981;
   --chart-4: #f59e0b;
   --chart-5: #ef4444;
@@ -39,19 +39,19 @@
   --card-foreground: #f8fafc;
   --popover: #0f172a;
   --popover-foreground: #f8fafc;
-  --primary: #38bdf8;
-  --primary-foreground: #020617;
-  --secondary: #1e293b;
-  --secondary-foreground: #f8fafc;
+  --primary: #5a9f3a;
+  --primary-foreground: #ffffff;
+  --secondary: #44802a;
+  --secondary-foreground: #ffffff;
   --muted: #334155;
   --muted-foreground: #94a3b8;
-  --accent: #818cf8;
+  --accent: #6ab84a;
   --accent-foreground: #ffffff;
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
-  --border: rgba(255, 255, 255, 0.08);
+  --border: rgba(68, 128, 42, 0.3);
   --input: #0f172a;
-  --ring: #38bdf8;
+  --ring: #5a9f3a;
 }
 
 @theme inline {
@@ -163,7 +163,7 @@
 
 /* Premium Gradients */
 .grad-primary {
-  background: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%);
+  background: linear-gradient(135deg, #44802a 0%, #5a9f3a 100%);
 }
 
 .grad-text {
@@ -203,4 +203,127 @@
 }
 .dark ::-webkit-scrollbar-thumb:hover {
   background: #334155;
+}
+
+/* Hide scrollbar for horizontal scroll */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Smooth transitions */
+* {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+/* Prevent layout shifts */
+.tab-content-wrapper {
+  contain: layout style paint;
+  will-change: contents;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Prevent content jumping */
+#tab-content-area {
+  position: relative;
+  min-height: 400px;
+  contain: layout style;
+}
+
+/* Fixed tab navigation */
+.sticky[class*="top-"] {
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+/* Prevent layout shifts during tab transitions */
+.container-px {
+  contain: layout style;
+  position: relative;
+}
+
+/* Ensure main container doesn't shift */
+main {
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Fixed tab navigation wrapper */
+.sticky.z-30,
+div[style*="position: sticky"][style*="top: 73px"] {
+  position: sticky !important;
+  top: 73px !important;
+  z-index: 30 !important;
+  transform: translateZ(0) !important;
+  -webkit-transform: translateZ(0) !important;
+  will-change: transform !important;
+  backface-visibility: hidden !important;
+  -webkit-backface-visibility: hidden !important;
+  isolation: isolate !important;
+  contain: layout style paint !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Ensure tab navigation stays fixed */
+.sticky.z-30 {
+  position: sticky !important;
+  top: 73px !important;
+  z-index: 30 !important;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Prevent any layout shifts */
+.sticky.z-30 > div {
+  contain: layout style paint;
+}
+
+/* Smooth tab content transitions */
+#tab-content-area {
+  contain: layout style paint;
+  will-change: contents;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+}
+
+/* Isolate tab navigation from content changes */
+.sticky.z-30 {
+  isolation: isolate;
+  contain: layout style paint;
+}
+
+/* Tab button smooth transitions */
+button[class*="tab"] {
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+/* Prevent flash of unstyled content */
+main {
+  opacity: 1;
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
